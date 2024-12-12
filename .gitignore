@@ -1,0 +1,73 @@
+# Archives and compressed files
+*.7z
+*.7Z
+*.gz
+*.GZ
+*.rar
+*.RAR
+*.tar
+*.TAR
+*.tar.*
+*.TAR.*
+*.tgz
+*.TGZ
+*.zip
+*.ZIP
+
+# Packages
+*.egg
+*.egg-info/
+*.jar
+*.war
+*.ear
+
+# Executable binary files
+*.exe
+*.EXE
+*.msi
+*.MSI
+*.dll
+*.DLL
+
+# Log files
+*.log
+*.LOG
+*.log.*
+*.LOG.*
+logs/*
+LOGS/*
+
+# Build directories
+build/
+target/*
+*/target/*
+cache/
+
+# Crash files
+hs_err_pid*
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Configuration files
+.htaccess
+
+# macOS specific files
+*.DS_Store
+
+# Data files
+*.csv
+data/
+
+# Compiled Python files
+*.pyc
+
+# Environments
+.env
+
+# Development tools
+.vscode
+.coverage
+
+# mkdocs documentation
+*/site

@@ -1,0 +1,50 @@
+---
+name: CI/CD for MkDocs
+on:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    branches:
+      - 'master'
+      - 'develop'
+jobs:
+  build:
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    name: Build doc
+    runs-on: forge
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install package with optional dependency 'doc'
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[doc]
+      - name: Run MkDocs build
+        working-directory: ./docs
+        run: mkdocs build
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: "docs/site/"
+  publish:
+    if: success() && github.ref == 'refs/heads/master'
+    name: Publish doc
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: forge
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
