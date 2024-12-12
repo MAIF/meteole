@@ -1,0 +1,22 @@
+default_language_version:
+    python: python3
+repos:
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.14
+    hooks:
+    -   id: ruff
+        args: [ --fix ]
+    -   id: ruff-format
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.8.0'
+    hooks:
+    -   id: mypy
+        args: [--config-file=pyproject.toml]
+        files: src
+        additional_dependencies: [types-pytz,types-requests,types-python-dateutil]
+-   repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.1.0
+    hooks:
+    -   id: conventional-pre-commit
+        stages: [commit-msg]
+        args: []

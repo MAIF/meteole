@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "meteole"
+version = "0.2.0"
+description = "Wrapper around Méteo-France Public API"
+readme = "README.md"
+authors = [
+    {name = "Squad Geodatahub / Tribu IODA"},
+]
+
+classifiers = [  #
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    # "Programming Language :: Python :: 3.12", no wheels 3.12 for dependency ecmwflibs
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "pandas>=2.0.0",
+    "ecmwflibs>=0.6.3",
+    "cfgrib>=0.0.11.0",
+    "numpy>=1.26.4",
+    "pandas>=2.2.2",
+    "rasterio>=1.3.10",
+    "requests>=2.31.0",
+    "tqdm>=4.66.4",
+    "xarray>=2024.5.0",
+    "xmltodict>=0.13.0",
+    "cartopy>=0.23.0",
+    "matplotlib>=3.8.4",
+
+]
+
+[project.optional-dependencies]
+test = ["pytest", "coverage"]
+doc = ["mkdocs-material", "mkdocstrings[python]"]
+mypy = ["mypy"]
+ruff = ["ruff"]
+all = [
+    "meteole[test]",
+    "meteole[doc]",
+    "meteole[mypy]",
+    "meteole[ruff]",
+    "pre-commit",
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" } #
+
+[tool.setuptools.package-data]
+"meteole.utils" = ["cacert.pem"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]  #
+testpaths = ["tests"]
+
+[tool.mypy]
+exclude = ["tests"]
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 120
+exclude = ["tests"]
+extend-include = ["*.ipynb"]
+
+[tool.ruff.lint]
+ignore = ["E501", "D2", "D3", "D4", "D104", "D100", "D106", "S311"]
+extend-select = [
+    "UP",  # pyupgrade"
+    "S", # flake8-bandit,
+    "B", # flake8-bugbear
+    "I", # isort
+    "D", # pydocstyle
+    "NPY", # NumPy-specific rules
+]

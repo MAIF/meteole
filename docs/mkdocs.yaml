@@ -1,0 +1,84 @@
+site_name: Meteole
+site_url: https://maif.github.io/meteole
+repo_url: https://github.com/MAIF/meteole
+repo_name: MAIF/meteole
+site_author: OSSbyMAIF Team
+docs_dir: pages
+theme:
+  name: 'material'
+  logo: assets/img/svg/meteole-fond-clair.svg
+  favicon: assets/img/svg/meteole-git.svg
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+      primary: white
+      accent: red
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: red
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: red
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  font:
+    text: 'Roboto'
+    code: 'Roboto Mono'
+  language: en
+  features:
+    - content.tabs.link
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - announce.dismiss
+    - navigation.tabs
+    - search.highlight
+    - search.share
+markdown_extensions:
+  tables:
+  admonition:
+  pymdownx.details:
+#  pymdownx.extra:
+  pymdownx.emoji:
+    emoji_index: !!python/name:material.extensions.emoji.twemoji
+    emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  pymdownx.tabbed:
+    alternate_style: true
+  pymdownx.highlight:
+    anchor_linenums: true
+    line_spans: __span
+    pygments_lang_class: true
+    use_pygments: true
+    linenums: true
+  pymdownx.inlinehilite:
+  pymdownx.snippets:   
+  pymdownx.superfences:
+    custom_fences:
+    - name: mermaid
+      class: mermaid
+      format: !!python/name:pymdownx.superfences.fence_code_format ''
+plugins:
+  - mkdocstrings
+  - search
+nav:
+  - Home: 
+    - Welcome: home.md
+    - Why use Meteole?: why.md
+    - Installation: installation.md
+  - User Guide:
+    - How to: how_to.md
+extra_css:
+  - assets/css/mkdocs_extra.css
