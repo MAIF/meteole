@@ -74,7 +74,7 @@ class Vigilance(MeteoFranceClient):
 
     def get_vigilance_map(self) -> dict:
         """
-        Get vigilance mao with predicted risk.
+        Get vigilance map with predicted risk.
 
         Returns:
             dict: a Dict with the predicted risk.
