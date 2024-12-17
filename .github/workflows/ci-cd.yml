@@ -14,8 +14,8 @@
           - main
 
     jobs:
-      pre-commit:
-        name: Apply pre-commit hooks
+      verify:
+        name: Apply pre-commit hooks and launch tests
         runs-on: ubuntu-latest
         steps:
           - name: Checkout
@@ -35,16 +35,10 @@
               key: ${{ runner.os }}-precommit-${{ hashFiles('.pre-commit-config.yaml') }}
           - name: Run pre-commit hooks
             run: pre-commit run --all-files
-      tests:
-        needs: pre-commit
-        if: success()
-        name: Launch tests
-        runs-on: ubuntu-latest
-        steps:
           - name: Unit Tests (pytest)
             run: python -m pytest
       publish:
-        needs: tests
+        needs: verify
         if: success() && startsWith(github.ref, 'refs/tags')
         name: Publish release to PyPI
         runs-on: ubuntu-latest
