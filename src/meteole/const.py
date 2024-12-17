@@ -18,13 +18,13 @@ FRANCE_METRO_LONGITUDES = (-5.1413, 9.5602)
 FRANCE_METRO_LATITUDES = (41.33356, 51.0889)
 
 dict_phenomenon_id = {
-    "1": "vent",
-    "2": "pluie",
-    "3": "orages",
-    "4": "crues",
-    "5": "neige / verglas",
-    "6": "canicule",
-    "7": "grand froid",
+    "1": "wind",
+    "2": "precipitation",
+    "3": "storm",
+    "4": "flood",
+    "5": "snow_ice",
+    "6": "heat_wave",
+    "7": "extreme_cold",
     "8": "avalanches",
-    "9": "vagues submersion",
+    "9": "waves_submergence",
 }

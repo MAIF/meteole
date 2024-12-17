@@ -44,9 +44,8 @@ AROME_OTHER_INDICATORS = [
     "TOTAL_PRECIPITATION__GROUND_OR_WATER_SURFACE",
 ]
 
-
 class AromeForecast(forecast.Forecast):
-    """Access the AROME numerical Forecast."""
+    """Access the AROME numerical forecast data."""
 
     api_version = "1.0"
     base_url = const.API_BASE_URL + "arome/" + api_version
@@ -61,30 +60,22 @@ class AromeForecast(forecast.Forecast):
         cache_dir: str | None = None,
     ):
         """
-        Init the AromeForecast object.
+        Initializes an AromeForecast object for accessing AROME forecast data.
 
-        Parameters
-        ----------
-        precision : {0.01, 0.025}, optional
-            the resolution of the AROME Model, by default 0.01
-        territory : str, optional
-            The AROME territory to fetch, by default "FRANCE"
-        api_key : str | None, optional
-            The API Key, by default None
-        token : str | None, optional
-            The API Token, by default None
-        application_id : str | None, optional
-            The Application ID, by default None
-        cache_dir : str | None, optional
-            The path to the caching directory, by default None.
-            If None, the cache directory is set to "/tmp/cache".
+        Args:
+            api_key (str | None, optional): The API key for authentication. Defaults to None.
+            territory (str, optional): The AROME territory to fetch. Defaults to "FRANCE".
+            precision (float, optional): The resolution of the AROME model. Supported values are 
+                `0.01` (high resolution) and `0.025` (lower resolution). Defaults to 0.01.
+            token (str | None, optional): The API token for authentication. Defaults to None.
+            application_id (str | None, optional): The application ID for authentication. Defaults to None.
+            cache_dir (str | None, optional): The path to the caching directory. Defaults to None. 
+                If not provided, the cache directory is set to "/tmp/cache".
 
-        Note
-        ----
-        See :class:`.MeteoFranceClient` for the parameters `api_key`, `token` and `application_id`.
-
-        The available territories are listed in :data:`.AVAILABLE_TERRITORY`.
-
+        Notes:
+            - See `MeteoFranceClient` for additional details on the parameters `api_key`, `token`, 
+              and `application_id`.
+            - Available territories are listed in the `AVAILABLE_TERRITORY` constant.
         """
         super().__init__(api_key, token, territory, precision, application_id, cache_dir)
 

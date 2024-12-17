@@ -162,19 +162,22 @@ class Forecast(ABC, MeteoFranceClient):
         interval: str | None = None,
     ) -> str:
         """
-        Get a coverage_id from `capabilities`.
+        Retrieves a `coverage_id` from the capabilities based on the provided parameters.
 
-        Parameters:
-        indicator (str): required.
-        run (Optional[str]): Identifies the model inference. Defaults to latest if None. Format "YYYY-MM-DDTHH:MM:SSZ".
-        interval (Optional[str]): aggregation period. Must be None for instant indicators, otherwise raises. Defaults to P1D for time-aggregated indicators like TOTAL_PRECIPITATION.
+        Args:
+            indicator (str): The indicator to retrieve. This parameter is required.
+            run (str | None, optional): The model inference timestamp. If None, defaults to the latest available run. 
+                Expected format: "YYYY-MM-DDTHH:MM:SSZ". Defaults to None.
+            interval (str | None, optional): The aggregation period. Must be None for instant indicators; 
+                raises an error if specified. Defaults to "P1D" for time-aggregated indicators such as 
+                TOTAL_PRECIPITATION.
 
         Returns:
-        str: coverage_id
+            str: The `coverage_id` corresponding to the given parameters.
 
         Raises:
-        ValueError: If no or invalid 'indicator'
-        ValueError: If invalid interval, or if missing interval when required
+            ValueError: If `indicator` is missing or invalid.
+            ValueError: If `interval` is invalid or required but missing.
         """
         if not hasattr(self, "capabilities"):
             self.get_capabilities()
@@ -287,7 +290,8 @@ class Forecast(ABC, MeteoFranceClient):
     def _raise_if_invalid_or_fetch_default(
         self, param_name: str, inputs: list[int] | None, availables: list[int]
     ) -> list[int]:
-        """
+        """Checks validity of `inputs`.
+        
         Checks if the elements in `inputs` are in `availables` and raises a ValueError if not.
         If `inputs` is empty or None, uses the first element from `availables` as the default value.
 
@@ -384,16 +388,12 @@ class Forecast(ABC, MeteoFranceClient):
             In the future, it should be possible to use it to
             get the available heights, times, latitudes and longitudes of the forecast.
 
-        Parameters
-        ----------
-        coverage_id: str
-            the Coverage ID. Use :meth:`get_coverage` to access the available coverage ids.
-            By default use the latest temperature coverage ID.
+        Args:
+            coverage_id (str): the Coverage ID. Use :meth:`get_coverage` to access the available coverage ids.
+                By default use the latest temperature coverage ID.
 
-        Returns
-        -------
-        description : dict
-            the description of the coverage.
+        Returns:
+            description (dict): the description of the coverage.
         """
         url = f"{self.base_url}/{self.entry_point}/DescribeCoverage"
         params = {
@@ -465,7 +465,7 @@ class Forecast(ABC, MeteoFranceClient):
             shutil.rmtree(self.folderpath)
 
         return df
-
+    
     def _get_coverage_file(
         self,
         coverage_id: str,
@@ -477,37 +477,37 @@ class Forecast(ABC, MeteoFranceClient):
         file_format: str = "grib",
         filepath: Path | None = None,
     ) -> Path:
-        """Fetch the raster values of the model predictions.
+        """
+        Retrieves raster data for a specified model prediction and saves it to a file.
 
-        The raster is saved to a file in the cache directory.
+        If no `filepath` is provided, the file is saved to a default cache directory under 
+        the current working directory.
 
-        Parameters
-        ----------
-        coverage_id: str
-            The ID of the coverage to fetch. Use the `get_coverage` method to find available coverage IDs.
-            By default, it uses the latest temperature coverage ID.
-        height: int, optional
-            The height in meters for the model. Defaults to 2 meters above ground.
-            The available heights can be accessed from the API, but this feature is not implemented yet.
-        forecast_horizon_in_seconds: int, optional
-            The forecast horizon in seconds into the future. Defaults to 0s (current time).
-            The available forecast horizons can be known via :meth:`get_coverage_description`
-        lat: tuple[float], optional
-            The minimum and maximum latitudes to return. Defaults to the latitudes of France.
-        long: tuple[float], optional
-            The minimum and maximum longitudes to return. Defaults to the longitudes of France.
-        file_format: str, optional
-            The format of the file to save the raster data. Defaults to "grib".
-        filepath: Path, optional
-            The path where the file will be saved. If not provided, it will be saved in the cache directory.
+        Args:
+            coverage_id (str): The coverage ID to retrieve. Use `get_coverage` to list available coverage IDs.
+            height (int, optional): The height above ground level in meters. Defaults to 2 meters. 
+                If not provided, no height subset is applied.
+            pressure (int, optional): The pressure level in hPa. If not provided, no pressure subset is applied.
+            forecast_horizon_in_seconds (int, optional): The forecast horizon in seconds into the future. 
+                Defaults to 0 (current time).
+            lat (tuple[float, float], optional): Tuple specifying the minimum and maximum latitudes. 
+                Defaults to (37.5, 55.4), covering the latitudes of France.
+            long (tuple[float, float], optional): Tuple specifying the minimum and maximum longitudes. 
+                Defaults to (-12, 16), covering the longitudes of France.
+            file_format (str, optional): The format of the raster file. Supported formats are "grib" and "tiff". 
+                Defaults to "grib".
+            filepath (Path, optional): The file path where the raster file will be saved. If not specified, 
+                the file is saved to a cache directory.
 
-        Returns
-        -------
-        filename : pathlib.Path
-            The path to the file containing the raster data in the specified format.
+        Returns:
+            Path: The file path to the saved raster data.
 
-        .. see-also::
-        :func:`.raster.plot_tiff_file` to plot the file.
+        Notes:
+            - If the file does not exist in the cache, it will be fetched from the API and saved.
+            - Supported subsets include pressure, height, time, latitude, and longitude.
+
+        See Also:
+            raster.plot_tiff_file: Method for plotting raster data stored in TIFF format.
         """
         self.filepath = filepath
 

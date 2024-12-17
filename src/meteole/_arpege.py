@@ -64,7 +64,7 @@ ARPEGE_OTHER_INDICATORS = [
 
 
 class ArpegeForecast(forecast.Forecast):
-    """Access the ARPEGE numerical Forecast."""
+    """Access the ARPEGE numerical forecast data."""
 
     api_version = "1.0"
     base_url = const.API_BASE_URL + "arpege/" + api_version
@@ -78,28 +78,22 @@ class ArpegeForecast(forecast.Forecast):
         cache_dir: str | None = None,
     ):
         """
-        Init the ArpegeForecast object.
-        Note that `precision` is infered from `territory`.
+        Initializes an ArpegeForecast object for accessing ARPEGE forecast data.
 
-        Parameters
-        ----------
-        api_key : str | None, optional
-            The API Key, by default None
-        token : str | None, optional
-            The API Token, by default None
-        territory : str, optional
-            The ARPEGE territory to fetch, by default "FRANCE"
-        application_id : str | None, optional
-            The Application ID, by default None
-        cache_dir : str | None, optional
-            The path to the caching directory, by default None.
-            If None, the cache directory is set to "/tmp/cache".
+        The `precision` of the forecast is inferred from the specified `territory`.
 
-        Note
-        ----
-        See :class:`.MeteoFranceClient` for the parameters `api_key`, `token` and `application_id`.
+        Args:
+            territory (str, optional): The ARPEGE territory to fetch. Defaults to "EUROPE".
+            api_key (str | None, optional): The API key for authentication. Defaults to None.
+            token (str | None, optional): The API token for authentication. Defaults to None.
+            application_id (str | None, optional): The Application ID for authentication. Defaults to None.
+            cache_dir (str | None, optional): Path to the cache directory. Defaults to None. 
+                If not provided, the cache directory is set to "/tmp/cache".
 
-        The available territories are listed in :data:`.AVAILABLE_TERRITORY`.
+        Notes:
+            - See `MeteoFranceClient` for additional details on the parameters `api_key`, `token`, 
+                and `application_id`.
+            - Available territories are listed in the `AVAILABLE_TERRITORY` constant.
 
         """
         super().__init__(

@@ -35,18 +35,16 @@ class Vigilance(MeteoFranceClient):
         application_id: str | None = None,
     ):
         """
-        Init the Vigilance object.
-         Parameters
-        ----------
-        api_key : str | None, optional
-            The API Key, by default None
-        token : str | None, optional
-            The API Token, by default None
-        application_id : str | None, optional
-            The Application ID, by default None
-        Note
-        ----
-        See :class:`.MeteoFranceClient` for the parameters `api_key`, `token` and `application_id`.
+        Initializes the Vigilance object.
+
+        Args:
+            api_key (str | None, optional): The API key for authentication. Defaults to None.
+            token (str | None, optional): The API token for authentication. Defaults to None.
+            application_id (str | None, optional): The application ID for authentication. Defaults to None.
+
+        Notes:
+            See `MeteoFranceClient` for additional details on the parameters `api_key`, `token`, 
+            and `application_id`.
         """
 
         super().__init__(api_key, token, application_id)

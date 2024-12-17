@@ -4,23 +4,18 @@ import xmltodict
 class GenericMeteofranceApiError(Exception):
     """Exception raised errors in the input parameters where a required field is missing.
 
-    Parameters
-        ----------
-        message : str
-            Human-readable string descipting the exceptetion.
-        description : str
-            More detailed description of the error."""
+    Args:
+        message (str): Human-readable string descipting the exceptetion.
+        description (str): More detailed description of the error."""
 
     def init(self, text: str):
         """Initialize the exception with an error message parsed from an XML
         string.
 
-        Parameters
-        ----------
-        text str:
-            XML string containing the error details,
-            expected to follow a specific schema with 'am:fault' as the root
-            element and 'am:message' and 'am:description' as child elements."""
+        Args:
+            text (str): XML string containing the error details,
+                expected to follow a specific schema with 'am:fault' as the root
+                element and 'am:message' and 'am:description' as child elements."""
 
         # parse the error message with xmltodict
         data = xmltodict.parse(text)
@@ -37,12 +32,10 @@ class MissingDataError(Exception):
         """Initialize the exception with an error message parsed from an XML
         string.
 
-        Parameters
-        ----------
-        text str:
-            XML string containing the error details,
-            expected to follow a specific schema with 'am:fault' as the root
-            element and 'am:message' and 'am:description' as child elements."""
+        Args:
+            text (str): XML string containing the error details,
+                expected to follow a specific schema with 'am:fault' as the root
+                element and 'am:message' and 'am:description' as child elements."""
 
         # parse the error message with xmltodict
         try:

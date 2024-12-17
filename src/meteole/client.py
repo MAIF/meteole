@@ -116,21 +116,17 @@ class MeteoFranceClient:
         return self.token
 
     def _get_request(self, url, params=None, max_retries=5):
-        """Make a get request to the API.
+        """
+        Makes a GET request to the API with optional retries.
 
-        Parameters
-        ----------
-        url : str
-            the url to request
-        params : dict
-            the parameters to pass to the request
-        max_retries : int
-            the maximum number of retries
+        Args:
+            url (str): The URL to send the GET request to.
+            params (dict, optional): The query parameters to include in the request. Defaults to None.
+            max_retries (int, optional): The maximum number of retry attempts in case of failure. Defaults to 5.
 
-        Returns
-        -------
-        requests.Response
-            the response of the request
+        Returns:
+            requests.Response: The response returned by the API.
+
         """
         logger.debug(f"GET {url}")
         attempt = 0
