@@ -103,7 +103,11 @@ class MeteoFranceClient:
         params: dict[str, str] = {"grant_type": "client_credentials"}
         header: dict[str, str] = {"Authorization": "Basic " + str(self.application_id)}
         res: requests.Response = requests.post(
-            token_entrypoint, params=params, headers=header, timeout=(30, 3600), verify=self.verify
+            token_entrypoint,
+            params=params,
+            headers=header,
+            timeout=(30, 3600),
+            verify=str(self.verify) if self.verify else None,
         )
         self.token = res.json()["access_token"]
 

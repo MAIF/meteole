@@ -87,11 +87,11 @@ class ArpegeForecast(forecast.Forecast):
             api_key (str | None, optional): The API key for authentication. Defaults to None.
             token (str | None, optional): The API token for authentication. Defaults to None.
             application_id (str | None, optional): The Application ID for authentication. Defaults to None.
-            cache_dir (str | None, optional): Path to the cache directory. Defaults to None. 
+            cache_dir (str | None, optional): Path to the cache directory. Defaults to None.
                 If not provided, the cache directory is set to "/tmp/cache".
 
         Notes:
-            - See `MeteoFranceClient` for additional details on the parameters `api_key`, `token`, 
+            - See `MeteoFranceClient` for additional details on the parameters `api_key`, `token`,
                 and `application_id`.
             - Available territories are listed in the `AVAILABLE_TERRITORY` constant.
 

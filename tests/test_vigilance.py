@@ -68,7 +68,7 @@ class TestVigilance(unittest.TestCase):
             }
         }
 
-        with patch.object(self.vigilance, 'get_vigilance_map', return_value=mock_get_vigilance_map.return_value):
+        with patch.object(self.vigilance, "get_vigilance_map", return_value=mock_get_vigilance_map.return_value):
             df_phenomenon, df_timelaps = self.vigilance.get_phenomenon()
 
             expected_phenomenon_data = {

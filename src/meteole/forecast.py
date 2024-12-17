@@ -166,10 +166,10 @@ class Forecast(ABC, MeteoFranceClient):
 
         Args:
             indicator (str): The indicator to retrieve. This parameter is required.
-            run (str | None, optional): The model inference timestamp. If None, defaults to the latest available run. 
+            run (str | None, optional): The model inference timestamp. If None, defaults to the latest available run.
                 Expected format: "YYYY-MM-DDTHH:MM:SSZ". Defaults to None.
-            interval (str | None, optional): The aggregation period. Must be None for instant indicators; 
-                raises an error if specified. Defaults to "P1D" for time-aggregated indicators such as 
+            interval (str | None, optional): The aggregation period. Must be None for instant indicators;
+                raises an error if specified. Defaults to "P1D" for time-aggregated indicators such as
                 TOTAL_PRECIPITATION.
 
         Returns:
@@ -291,7 +291,7 @@ class Forecast(ABC, MeteoFranceClient):
         self, param_name: str, inputs: list[int] | None, availables: list[int]
     ) -> list[int]:
         """Checks validity of `inputs`.
-        
+
         Checks if the elements in `inputs` are in `availables` and raises a ValueError if not.
         If `inputs` is empty or None, uses the first element from `availables` as the default value.
 
@@ -465,7 +465,7 @@ class Forecast(ABC, MeteoFranceClient):
             shutil.rmtree(self.folderpath)
 
         return df
-    
+
     def _get_coverage_file(
         self,
         coverage_id: str,
@@ -480,23 +480,23 @@ class Forecast(ABC, MeteoFranceClient):
         """
         Retrieves raster data for a specified model prediction and saves it to a file.
 
-        If no `filepath` is provided, the file is saved to a default cache directory under 
+        If no `filepath` is provided, the file is saved to a default cache directory under
         the current working directory.
 
         Args:
             coverage_id (str): The coverage ID to retrieve. Use `get_coverage` to list available coverage IDs.
-            height (int, optional): The height above ground level in meters. Defaults to 2 meters. 
+            height (int, optional): The height above ground level in meters. Defaults to 2 meters.
                 If not provided, no height subset is applied.
             pressure (int, optional): The pressure level in hPa. If not provided, no pressure subset is applied.
-            forecast_horizon_in_seconds (int, optional): The forecast horizon in seconds into the future. 
+            forecast_horizon_in_seconds (int, optional): The forecast horizon in seconds into the future.
                 Defaults to 0 (current time).
-            lat (tuple[float, float], optional): Tuple specifying the minimum and maximum latitudes. 
+            lat (tuple[float, float], optional): Tuple specifying the minimum and maximum latitudes.
                 Defaults to (37.5, 55.4), covering the latitudes of France.
-            long (tuple[float, float], optional): Tuple specifying the minimum and maximum longitudes. 
+            long (tuple[float, float], optional): Tuple specifying the minimum and maximum longitudes.
                 Defaults to (-12, 16), covering the longitudes of France.
-            file_format (str, optional): The format of the raster file. Supported formats are "grib" and "tiff". 
+            file_format (str, optional): The format of the raster file. Supported formats are "grib" and "tiff".
                 Defaults to "grib".
-            filepath (Path, optional): The file path where the raster file will be saved. If not specified, 
+            filepath (Path, optional): The file path where the raster file will be saved. If not specified,
                 the file is saved to a cache directory.
 
         Returns:

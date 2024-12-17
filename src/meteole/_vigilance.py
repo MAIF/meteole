@@ -43,7 +43,7 @@ class Vigilance(MeteoFranceClient):
             application_id (str | None, optional): The application ID for authentication. Defaults to None.
 
         Notes:
-            See `MeteoFranceClient` for additional details on the parameters `api_key`, `token`, 
+            See `MeteoFranceClient` for additional details on the parameters `api_key`, `token`,
             and `application_id`.
         """
 
@@ -74,7 +74,7 @@ class Vigilance(MeteoFranceClient):
 
     def get_vigilance_map(self) -> dict:
         """
-        Get vigilance map with predicted risk.
+        Get the vigilance map with predicted risk displayed.
 
         Returns:
             dict: a Dict with the predicted risk.

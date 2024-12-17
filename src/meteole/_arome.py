@@ -44,6 +44,7 @@ AROME_OTHER_INDICATORS = [
     "TOTAL_PRECIPITATION__GROUND_OR_WATER_SURFACE",
 ]
 
+
 class AromeForecast(forecast.Forecast):
     """Access the AROME numerical forecast data."""
 
@@ -65,15 +66,15 @@ class AromeForecast(forecast.Forecast):
         Args:
             api_key (str | None, optional): The API key for authentication. Defaults to None.
             territory (str, optional): The AROME territory to fetch. Defaults to "FRANCE".
-            precision (float, optional): The resolution of the AROME model. Supported values are 
+            precision (float, optional): The resolution of the AROME model. Supported values are
                 `0.01` (high resolution) and `0.025` (lower resolution). Defaults to 0.01.
             token (str | None, optional): The API token for authentication. Defaults to None.
             application_id (str | None, optional): The application ID for authentication. Defaults to None.
-            cache_dir (str | None, optional): The path to the caching directory. Defaults to None. 
+            cache_dir (str | None, optional): The path to the caching directory. Defaults to None.
                 If not provided, the cache directory is set to "/tmp/cache".
 
         Notes:
-            - See `MeteoFranceClient` for additional details on the parameters `api_key`, `token`, 
+            - See `MeteoFranceClient` for additional details on the parameters `api_key`, `token`,
               and `application_id`.
             - Available territories are listed in the `AVAILABLE_TERRITORY` constant.
         """
