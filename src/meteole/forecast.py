@@ -4,7 +4,7 @@ import logging
 import os
 import shutil
 import tempfile
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 import pandas as pd
@@ -12,13 +12,13 @@ import xarray as xr
 import xmltodict
 
 from meteole import const
-from meteole._client import MeteoFranceClient
+from meteole.client import MeteoFranceClient
 from meteole.errors import MissingDataError
 
 logger = logging.getLogger(__name__)
 
 
-class Forecast(MeteoFranceClient):
+class Forecast(ABC, MeteoFranceClient):
     """
     Provides a unified interface to query AROME and ARPEGE endpoints
 

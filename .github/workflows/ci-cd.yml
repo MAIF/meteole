@@ -15,7 +15,7 @@
 
     jobs:
       verify:
-        name: Apply pre-commit hooks and launch tests
+        name: Pre-commit hooks and Tests
         runs-on: ubuntu-latest
         steps:
           - name: Checkout

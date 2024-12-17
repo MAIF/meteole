@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from meteole._client import MeteoFranceClient
+from meteole.client import MeteoFranceClient
 
 
 def test_init_with_api_key():
@@ -19,7 +19,7 @@ def test_init_with_token():
     assert api.application_id is None
 
 
-@patch("meteole._client.MeteoFranceClient.connect")
+@patch("meteole.client.MeteoFranceClient.connect")
 def test_init_with_application_id(mock_connect):
     api = MeteoFranceClient(application_id="dummy_app_id")
     assert api.application_id == "dummy_app_id"

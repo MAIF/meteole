@@ -310,7 +310,7 @@ class TestArpegeForecast(unittest.TestCase):
             arpege_forecast._validate_parameters()
 
     @patch("meteole._arpege.ArpegeForecast.get_capabilities")
-    @patch("meteole._client.MeteoFranceClient.connect")
+    @patch("meteole.client.MeteoFranceClient.connect")
     def test_entry_point(self, mock_MeteoFranceClient_connect, mock_get_capabilities):
         territory = "EUROPE"
         arpege_forecast = ArpegeForecast(territory=territory)
