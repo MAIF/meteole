@@ -43,8 +43,8 @@ class MissingDataError(Exception):
             exception = data["mw:fault"]["mw:description"]["ns0:ExceptionReport"]["ns0:Exception"]
             code = exception["@exceptionCode"]
             locator = exception["@locator"]
-            text = exception["ns0:ExceptionText"]
-            message = f"Error code: {code}\nLocator: {locator}\nText: {text}"
+            exception_text = exception["ns0:ExceptionText"]
+            message = f"Error code: {code}\nLocator: {locator}\nText: {exception_text}"
         except Exception:
             message = text
         self.message = message
