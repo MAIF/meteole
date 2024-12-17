@@ -14,32 +14,32 @@ class TestVigilance(unittest.TestCase):
         self.vigilance = Vigilance(api_key=self.api_key, token=self.token, application_id=self.application_id)
 
     @patch("meteole._vigilance.Vigilance._get_request")
-    def test_get_textes_vigilance(self, mock_get_request):
+    def test_get_vigilance_bulletin(self, mock_get_request):
         mock_response = MagicMock()
         mock_response.json.return_value = {"data": "some_data"}
         mock_get_request.return_value = mock_response
 
-        result = self.vigilance.get_textes_vigilance()
+        result = self.vigilance.get_vigilance_bulletin()
         self.assertEqual(result, {"data": "some_data"})
         mock_get_request.assert_called_once_with(
             "https://public-api.meteofrance.fr/public/DPVigilance/v1/textesvigilance/encours"
         )
 
     @patch("meteole._vigilance.Vigilance._get_request")
-    def test_get_carte_vigilance(self, mock_get_request):
+    def test_get_vigilance_map(self, mock_get_request):
         mock_response = MagicMock()
         mock_response.json.return_value = {"data": "some_data"}
         mock_get_request.return_value = mock_response
 
-        result = self.vigilance.get_carte_vigilance()
+        result = self.vigilance.get_vigilance_map()
         self.assertEqual(result, {"data": "some_data"})
         mock_get_request.assert_called_once_with(
             "https://public-api.meteofrance.fr/public/DPVigilance/v1/cartevigilance/encours"
         )
 
-    @patch("meteole._vigilance.Vigilance.get_carte_vigilance")
-    def test_get_phenomenon(self, mock_get_carte_vigilance):
-        mock_get_carte_vigilance.return_value = {
+    @patch("meteole._vigilance.Vigilance.get_vigilance_map")
+    def test_get_phenomenon(self, mock_get_vigilance_map):
+        mock_get_vigilance_map.return_value = {
             "product": {
                 "periods": [
                     {
@@ -68,7 +68,7 @@ class TestVigilance(unittest.TestCase):
             }
         }
 
-        with patch.object(self.vigilance, "get_carte_vigilance", return_value=mock_get_carte_vigilance.return_value):
+        with patch.object(self.vigilance, 'get_vigilance_map', return_value=mock_get_vigilance_map.return_value):
             df_phenomenon, df_timelaps = self.vigilance.get_phenomenon()
 
             expected_phenomenon_data = {
