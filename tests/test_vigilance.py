@@ -79,7 +79,7 @@ class TestVigilance(unittest.TestCase):
                     [{"color_id": 2, "color_name": "Jaune", "count": 3}],
                 ],
                 "echeance": ["J", "J1"],
-                "phenomenon_libelle": ["vent", "pluie"],
+                "phenomenon_libelle": ["wind", "rain"],
             }
             expected_phenomenon_df = pd.DataFrame(expected_phenomenon_data)
 

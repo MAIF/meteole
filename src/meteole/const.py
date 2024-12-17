@@ -19,7 +19,7 @@ FRANCE_METRO_LATITUDES = (41.33356, 51.0889)
 
 dict_phenomenon_id = {
     "1": "wind",
-    "2": "precipitation",
+    "2": "rain",
     "3": "storm",
     "4": "flood",
     "5": "snow_ice",
