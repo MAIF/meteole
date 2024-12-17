@@ -1,7 +1,9 @@
-import pytest
-from unittest.mock import patch, MagicMock, Mock
+from unittest.mock import MagicMock, patch
 
-from meteole.client import MeteoFranceClient
+import pytest
+
+from meteole._client import MeteoFranceClient
+
 
 def test_init_with_api_key():
     api = MeteoFranceClient(api_key="dummy_api_key")
@@ -9,21 +11,25 @@ def test_init_with_api_key():
     assert api.token is None
     assert api.application_id is None
 
+
 def test_init_with_token():
     api = MeteoFranceClient(token="dummy_token")
     assert api.api_key is None
     assert api.token == "dummy_token"
     assert api.application_id is None
 
-@patch('meteole.client.MeteoFranceClient.connect')
+
+@patch("meteole._client.MeteoFranceClient.connect")
 def test_init_with_application_id(mock_connect):
     api = MeteoFranceClient(application_id="dummy_app_id")
     assert api.application_id == "dummy_app_id"
     assert api.api_key is None
 
+
 def test_connect_no_credentials():
     with pytest.raises(ValueError):
         MeteoFranceClient()
+
 
 @patch("requests.post")
 def test_get_token(mock_post):
@@ -34,6 +40,7 @@ def test_get_token(mock_post):
 
     assert token == "dummy_token"
     assert api.token == "dummy_token"
+
 
 @patch("requests.Session.get")
 @patch.object(MeteoFranceClient, "get_token")
@@ -47,6 +54,7 @@ def test_get_request_success(mock_get_token, mock_get):
     response = api._get_request("https://dummyurl.com")
     assert response.status_code == 200
     assert response.json() == {"data": "some data"}
+
 
 @patch("requests.Session.get")
 @patch.object(MeteoFranceClient, "get_token")
@@ -72,6 +80,7 @@ def test_get_request_token_expired(mock_get_token, mock_get):
     assert response.status_code == 200
     assert response.json() == {"data": "some data"}
 
+
 def test_token_expired():
     api = MeteoFranceClient(api_key="dummy_api_key")
     expired_response = MagicMock()
@@ -81,6 +90,7 @@ def test_token_expired():
 
     assert api._token_expired(expired_response) == True
 
+
 def test_token_not_expired():
     api = MeteoFranceClient(api_key="dummy_api_key")
     valid_response = MagicMock()
@@ -89,6 +99,7 @@ def test_token_not_expired():
     valid_response.text = lambda: {"description": "Valid JWT token"}
 
     assert api._token_expired(valid_response) == False
+
 
 @patch("requests.Session.get")
 @patch.object(MeteoFranceClient, "get_token")

@@ -5,19 +5,28 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "meteole"
 version = "0.2.0"
-description = "Wrapper around Méteo-France Public API"
+requires-python = ">3.9.0"
+description = "A Python client library for Méteo-France public API."
 readme = "README.md"
+license = {text = "Apache-2.0"}
 authors = [
-    {name = "Squad Geodatahub / Tribu IODA"},
+        {name = "?", email = "?@?.?"},
+        {name = "?", email = "?@?.?"},
 ]
 
-classifiers = [  #
+classifiers = [
     "Development Status :: 4 - Beta",
+    "Operating System :: OS Independent",
     "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
     "Topic :: Software Development :: Libraries :: Python Modules",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     # "Programming Language :: Python :: 3.12", no wheels 3.12 for dependency ecmwflibs
+    "License :: OSI Approved :: Apache Software License",
 ]
 
 dependencies = [
@@ -30,16 +39,25 @@ dependencies = [
     "matplotlib>=3.8.4",
 ]
 
+[project.urls]
+Homepage = "https://pages.github.com/MAIF/meteole/home"
+Documentation = "https://pages.github.com/MAIF/meteole/home"
+Repository = "https://github.com/MAIF/meteole"
+
 [project.optional-dependencies]
 test = ["pytest", "coverage"]
 doc = ["mkdocs-material", "mkdocstrings[python]", "jinja2==3.0.3"]
-mypy = ["mypy"]
-ruff = ["ruff"]
 dev = ["mypy", "pre-commit", "ruff"]
-all = ["meteole[test,dev,doc,mypy,ruff]"]
+all = ["meteole[test,doc,dev]"]
 
 [tool.setuptools]
 package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"meteole" = ["py.typed"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
@@ -48,19 +66,33 @@ testpaths = ["tests"]
 [tool.mypy]
 exclude = ["tests"]
 ignore_missing_imports = true
+plugins = ["pydantic.mypy"]
 
 [tool.ruff]
 line-length = 120
-exclude = ["tests"]
 extend-include = ["*.ipynb"]
 
 [tool.ruff.lint]
-ignore = ["E501", "D2", "D3", "D4", "D104", "D100", "D106", "S311"]
+ignore = ["E501", "D2", "D3", "D4", "D104", "D100", "D106", "S311", "UP007"]
 extend-select = [
-    "UP",  # pyupgrade"
-    "S", # flake8-bandit,
-    "B", # flake8-bugbear
-    "I", # isort
-    "D", # pydocstyle
-    "NPY", # NumPy-specific rules
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "W",    # pycodestyle warnings
+    "A",    # flake8-builtins
+    "PLC",  # pylint conventions
+    "PLE",  # pylint errors
+    "PLW",  # pylint warnings
+    "UP",   # pyupgrade
+    "S",    # flake8-bandit,
+    "B",    # flake8-bugbear
+    "I",    # isort
+    "D",    # pydocstyle
+    "NPY",  # NumPy-specific rules
 ]
+exclude = ["tests/*"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

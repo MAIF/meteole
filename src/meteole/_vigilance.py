@@ -5,13 +5,13 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from meteole import client, const
+from meteole import _client, const
 from meteole.errors import MissingDataError
 
 logger = logging.getLogger(__name__)
 
 
-class Vigilance(client.MeteoFranceClient):
+class Vigilance(_client.MeteoFranceClient):
     """Wrapper around the meteo-France API for the vigilance data.
     Ressources are:
     - textesvigilance

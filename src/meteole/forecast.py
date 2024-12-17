@@ -12,7 +12,7 @@ import xarray as xr
 import xmltodict
 
 from meteole import const
-from meteole.client import MeteoFranceClient
+from meteole._client import MeteoFranceClient
 from meteole.errors import MissingDataError
 
 logger = logging.getLogger(__name__)

@@ -5,14 +5,14 @@
       branches:
         - main
       tags:
-        - '*'  # Later: \b[0-9]\.[0-9]+\.[0-9]+[ab]?[0-9]?\b
+        - '*'  # Later: \b[0-9]+\.[0-9]+\.[0-9]+[ab]?[0-9]+?\b
     pull_request:
       types:
         - opened
         - synchronize
       branches:
         - main
-  
+
   jobs:
     build:
       if: ${{ github.actor != 'dependabot[bot]' }}

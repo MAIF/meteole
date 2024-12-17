@@ -64,6 +64,7 @@ data/
 
 # Environments
 .env
+.venv
 
 # Development tools
 .vscode

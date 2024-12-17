@@ -6,7 +6,7 @@
 </p>
 <p align="center">
   <img src="https://github.com/MAIF/meteole/actions/workflows/ci-cd.yml/badge.svg?branch=main" alt="CI">
-  <img src="https://img.shields.io/badge/coverage-90%25-dark_green" alt="Coverage">
+  <img src="https://img.shields.io/badge/coverage-86%25-dark_green" alt="Coverage">
   <img src="https://img.shields.io/pypi/v/meteole" alt="Versions">
   <img src="https://img.shields.io/pypi/pyversions/meteole" alt="Python">
   <img src="https://img.shields.io/pypi/dm/meteole" alt="Downloads">
@@ -47,9 +47,9 @@ The flagship weather forecasting models of Météo-France are accessible via the
 | Forecast Range   | Up to 51 hours       | Up to 114 hours      |
 
 ```python
-from meteole import arome
+from meteole import AromeForecast
 
-arome_client = arome.AromeForecast(application_id=APPLICATION_ID)  # APPLICATION_ID found on portail.meteo-france.Fr
+arome_client = AromeForecast(application_id=APPLICATION_ID)  # APPLICATION_ID found on portail.meteo-france.Fr
 
 # let's look at the latest wind gusts
 indicator = 'V_COMPONENT_OF_WIND_GUST__SPECIFIC_HEIGHT_LEVEL_ABOVE_GROUND'
@@ -83,7 +83,7 @@ textes_vigilance = client.get_textes_vigilance() # pour accéder aux bulletins d
 client.get_vignette() # pour afficher les vignettes
 ```
 
-<img src="assets/vignette_exemple.png" width="600" height="300" alt="vignette de vigilance">
+<img src="docs/pages/assets/img/png/vignette_exemple.png" width="600" height="300" alt="vignette de vigilance">
 
 To have more documentation from MeteoFrance in Vigilance Bulletin :
 - [Meteo France Documentation](https://donneespubliques.meteofrance.fr/?fond=produit&id_produit=305&id_rubrique=50)
