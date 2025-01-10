@@ -156,43 +156,10 @@ class TestAromeForecast(unittest.TestCase):
         self.assertIn("wcs:CoverageDescriptions", description)
 
     @patch("meteole._arome.AromeForecast.get_capabilities")
-    @patch("meteole.clients.MeteoFranceClient.get")
-    def test_get_coverage_file(self, mock_get_request, mock_get_capabilities):
-        mock_response = MagicMock()
-        mock_response.content = b"fake_data"
-        mock_get_request.return_value = mock_response
-        mock_get_capabilities.return_value = None
-
-        forecast = AromeForecast(
-            self.client,
-            precision=self.precision,
-            territory=self.territory,
-        )
-
-        coverage_id = "coverage_1"
-        path = forecast._get_coverage_file(
-            coverage_id=coverage_id,
-            height=2,
-            forecast_horizon_in_seconds=0,
-            lat=(37.5, 55.4),
-            long=(-12, 16),
-        )
-
-        expected_path = Path(os.getcwd()) / coverage_id / "2m_0Z_37.5-55.4_-12-16.grib"
-        self.assertTrue(expected_path.exists())
-        self.assertTrue(expected_path == path)
-
-        # remove the folder created in _get_coverage_file
-        forecast._remove_coverage_files(path)
-
-    @patch("meteole._arome.AromeForecast.get_capabilities")
-    @patch("meteole._arome.AromeForecast._transform_grib_to_df")
+    @patch("meteole._arome.AromeForecast._grib_bytes_to_df")
     @patch("meteole._arome.AromeForecast._get_coverage_file")
-    @patch("meteole._arome.AromeForecast._remove_coverage_files")
-    def test_get_data_single_forecast(
-        self, mock_remove_coverage_files, mock_get_coverage_file, mock_transform_grib_to_df, mock_get_capabilities
-    ):
-        mock_transform_grib_to_df.return_value = pd.DataFrame({"data": [1, 2, 3]})
+    def test_get_data_single_forecast(self, mock_get_coverage_file, mock_grib_bytes_to_df, mock_get_capabilities):
+        mock_grib_bytes_to_df.return_value = pd.DataFrame({"data": [1, 2, 3]})
 
         forecast = AromeForecast(
             self.client,
@@ -212,13 +179,13 @@ class TestAromeForecast(unittest.TestCase):
         self.assertTrue("data" in df.columns)
 
     @patch("meteole._arome.AromeForecast.get_capabilities")
-    @patch("meteole._arome.AromeForecast._transform_grib_to_df")
+    @patch("meteole._arome.AromeForecast._grib_bytes_to_df")
     @patch("meteole._arome.AromeForecast._get_coverage_file")
-    @patch("meteole._arome.AromeForecast._remove_coverage_files")
     def test_get_data_single_forecast_with_height(
-        self, mock_remove_coverage_files, mock_get_coverage_file, mock_transform_grib_to_df, mock_get_capabilities
+        self, mock_get_coverage_file, mock_grib_bytes_to_df, mock_get_capabilities
     ):
-        mock_transform_grib_to_df.return_value = pd.DataFrame({"data": [1, 2, 3], "heightAboveGround": ["2", "2", "2"]})
+        mock_get_coverage_file.return_value = ""
+        mock_grib_bytes_to_df.return_value = pd.DataFrame({"data": [1, 2, 3], "heightAboveGround": ["2", "2", "2"]})
 
         forecast = AromeForecast(
             self.client,
