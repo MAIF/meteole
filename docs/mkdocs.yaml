@@ -7,7 +7,7 @@ docs_dir: pages
 theme:
   name: material
   logo: assets/img/svg/meteole-fond-clair.svg
-  favicon: assets/img/svg/meteole-git.svg
+  favicon: assets/img/png/meteole-git.png
   palette:
     # Palette toggle for automatic mode
     - media: "(prefers-color-scheme)"
