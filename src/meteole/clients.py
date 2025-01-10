@@ -20,24 +20,36 @@ logger = logging.getLogger(__name__)
 class HttpStatus(int, Enum):
     """Http status codes"""
 
-    OK: int = 200
-    BAD_REQUEST: int = 400
-    UNAUTHORIZED: int = 401
-    FORBIDDEN: int = 403
-    NOT_FOUND: int = 404
-    TOO_MANY_REQUESTS: int = 429
-    INTERNAL_ERROR: int = 500
-    BAD_GATEWAY: int = 502
-    UNAVAILABLE: int = 503
-    GATEWAY_TIMEOUT: int = 504
+    OK = 200
+    BAD_REQUEST = 400
+    UNAUTHORIZED = 401
+    FORBIDDEN = 403
+    NOT_FOUND = 404
+    TOO_MANY_REQUESTS = 429
+    INTERNAL_ERROR = 500
+    BAD_GATEWAY = 502
+    UNAVAILABLE = 503
+    GATEWAY_TIMEOUT = 504
 
 
 class BaseClient(ABC):
-    """TODO"""
+    """(Abstract)
+
+    Base class for weather forecast provider clients.
+    """
 
     @abstractmethod
     def get(self, path: str, *, params: dict[str, Any] | None = None, max_retries: int = 5) -> Response:
-        """TODO"""
+        """Retrieve some data with retry capability.
+
+        Args:
+            path: Path to a resource.
+            params: The query parameters of the request.
+            max_retries: The maximum number of retry attempts in case of failure.
+
+        Returns:
+            The response returned by the API.
+        """
         raise NotImplementedError
 
 
@@ -46,17 +58,11 @@ class MeteoFranceClient(BaseClient):
 
     This class handles the connection setup and token refreshment required for
     authenticating and making requests to the Meteo France API.
-
-    Attributes:
-        api_key (str | None): The API key for accessing the Meteo France API.
-        token (str | None): The authentication token for accessing the API.
-        application_id (str | None): The application ID used for identification.
-        verify (Path | None): The path to a file or directory of trusted CA certificates for SSL verification.
     """
 
     # Class constants
     API_BASE_URL: str = "https://public-api.meteofrance.fr/public/"
-    TOKEN_URL: str = "https://portail-api.meteofrance.fr/token"
+    TOKEN_URL: str = "https://portail-api.meteofrance.fr/token"  # noqa: S105
     GET_TOKEN_TIMEOUT_SEC: int = 10
     INVALID_JWT_ERROR_CODE: str = "900901"
     RETRY_DELAY_SEC: int = 10
@@ -70,13 +76,13 @@ class MeteoFranceClient(BaseClient):
         certs_path: Path | None = None,
     ) -> None:
         """
-        Initializes the MeteoFranceClient object.
+        Initialize attributes.
 
         Args:
-            api_key (str | None): The API key for accessing the Meteo France API.
-            token (str | None): The authentication token for accessing the API.
-            application_id (str | None): The application ID used for identification.
-            verify (Path | None): The path to a file or directory of trusted CA certificates for SSL verification.
+            token: The authentication token for accessing the API.
+            api_key: The API key for accessing the Meteo France API.
+            application_id: The application ID used for identification.
+            certs_path: The path to a file or directory of trusted CA certificates for SSL verification.
         """
         self._token = token
         self._api_key = api_key
@@ -92,16 +98,15 @@ class MeteoFranceClient(BaseClient):
 
     def get(self, path: str, *, params: dict[str, Any] | None = None, max_retries: int = 5) -> Response:
         """
-        Makes a GET request to the API with optional retries.
+        Make a GET request to the API with optional retries.
 
         Args:
-            url (str): The URL to send the GET request to.
-            params (dict, optional): The query parameters to include in the request. Defaults to None.
-            max_retries (int, optional): The maximum number of retry attempts in case of failure. Defaults to 5.
+            path: Path to a resource.
+            params: The query parameters of the request.
+            max_retries: The maximum number of retry attempts in case of failure.
 
         Returns:
-            requests.Response: The response returned by the API.
-
+            The response returned by the API.
         """
         url: str = self.API_BASE_URL + path
         attempt: int = 0
@@ -157,8 +162,10 @@ class MeteoFranceClient(BaseClient):
         raise GenericMeteofranceApiError(f"Failed to get a successful response from API after {attempt} retries")
 
     def _connect(self):
-        """Connect to the MeteoFrance API.
+        """(Protected)
+        Connect to the Meteo-France API.
 
+        Note:
         If the API key is provided, it is used to authenticate the user.
         If the token is provided, it is used to authenticate the user.
         If the application ID is provided, a token is requested from the API.
@@ -183,11 +190,15 @@ class MeteoFranceClient(BaseClient):
             self._session.headers.update({"Authorization": f"Bearer {self._token}"})
 
     def _get_token(self) -> str:
-        """request a token from the meteo-France API.
+        """(Protected)
+        Request a token from the Meteo-France API.
 
         The token lasts 1 hour, and is used to authenticate the user.
         If a new token is requested before the previous one expires, the previous one is invalidated.
         A local cache is used to avoid requesting a new token at each run of the script.
+
+        Rerturns:
+            A JWT.
         """
         if self._token_expired is False and self._token is not None:
             # Use cached token
@@ -216,11 +227,13 @@ class MeteoFranceClient(BaseClient):
         return token
 
     def _is_token_expired(self, response: Response) -> bool:
-        """Check if the token is expired.
+        """(Protected)
+        Check if the token is expired.
 
-        Returns
-        -------
-        bool
+        Args:
+            response: A request's response from the API.
+
+        Returns:
             True if the token is expired, False otherwise.
         """
         result: bool = False

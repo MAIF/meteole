@@ -17,14 +17,13 @@ logger = logging.getLogger(__name__)
 
 @final
 class Vigilance:
-    """Wrapper around the meteo-France API for the vigilance data.
-    Ressources are:
+    """Easy access to the vigilance data of Meteo-France.
+
+    Resources are:
     - textesvigilance
     - cartevigilance
 
-    Documentation
-    -------------
-    See:
+    Docs:
     - https://portail-api.meteofrance.fr/web/fr/api/DonneesPubliquesVigilance
     - https://donneespubliques.meteofrance.fr/client/document/descriptiftechnique_vigilancemetropole_
         donneespubliques_v4_20230911_307.pdf
@@ -49,7 +48,7 @@ class Vigilance:
         client: BaseClient | None = None,
         **kwargs: Any,
     ) -> None:
-        """TODO"""
+        """Initialize attributes"""
         if client is not None:
             self._client = client
         else:
@@ -57,11 +56,10 @@ class Vigilance:
             self._client = MeteoFranceClient(**kwargs)
 
     def get_bulletin(self) -> dict[str, Any]:
-        """
-        Retrieve the vigilance bulletin.
+        """Retrieve the vigilance bulletin.
 
         Returns:
-            dict: a Dict representing the vigilance bulletin
+            Dictionary representing the vigilance bulletin
         """
 
         path: str = self.VIGILANCE_BASE_PATH + self.API_VERSION + "/textesvigilance/encours"
@@ -72,7 +70,7 @@ class Vigilance:
             return resp.json()
 
         except MissingDataError as e:
-            if "no matching blob" in e.message:
+            if "no matching blob" in str(e):
                 logger.warning("Ongoing vigilance requires no publication")
             else:
                 logger.error(f"Unexpected error: {e}")
@@ -82,11 +80,10 @@ class Vigilance:
             return {}
 
     def get_map(self) -> dict[str, Any]:
-        """
-        Get the vigilance map with predicted risk displayed.
+        """Get the vigilance map with predicted risk displayed.
 
         Returns:
-            dict: a Dict with the predicted risk.
+            Dictionary with the predicted risk.
         """
         path: str = self.VIGILANCE_BASE_PATH + self.API_VERSION + "/cartevigilance/encours"
         logger.debug(f"GET {path}")
@@ -96,12 +93,12 @@ class Vigilance:
         return resp.json()
 
     def get_phenomenon(self) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """
-        Get risk prediction by phenomenon and by domain.
+        """Get risk prediction by phenomenon and by domain.
 
         Returns:
-            pd.DataFrame: a DataFrame with phenomenon by id
-            pd.DataFrame: a DataFrame with phenomenon by domain
+            Tuple of:
+                A DataFrame with phenomenon by id
+                A DataFrame with phenomenon by domain
         """
         df_carte = pd.DataFrame(self.get_map())
         periods_data = df_carte.loc["periods", "product"]
@@ -128,9 +125,7 @@ class Vigilance:
         return df_phenomenon, df_timelaps
 
     def get_vignette(self) -> None:
-        """
-        Get png.
-        """
+        """Get png file."""
         path: str = self.VIGILANCE_BASE_PATH + self.API_VERSION + "/vignettenationale-J-et-J1/encours"
 
         logger.debug(f"GET {path}")

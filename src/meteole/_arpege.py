@@ -1,15 +1,9 @@
-"""The interface for the observational data from the meteo-France API.
-
-See :
-- https://portail-api.meteofrance.fr/web/fr/api/arpege
-"""
-
 from __future__ import annotations
 
 from typing import Any, final
 
 from meteole.clients import BaseClient, MeteoFranceClient
-from meteole.forecast import Forecast
+from meteole.forecast import WeatherForecast
 
 AVAILABLE_ARPEGE_TERRITORY: list[str] = ["EUROPE", "GLOBE", "ATOURX", "EURAT"]
 
@@ -68,8 +62,17 @@ ARPEGE_OTHER_INDICATORS: list[str] = [
 
 
 @final
-class ArpegeForecast(Forecast):
-    """Access the ARPEGE numerical forecast data."""
+class ArpegeForecast(WeatherForecast):
+    """Access the ARPEGE numerical weather forecast data from Meteo-France API.
+
+    Doc:
+        - https://portail-api.meteofrance.fr/web/fr/api/arpege
+
+    Attributes:
+        territory: Covered area (e.g., FRANCE, ANTIL, ...).
+        precision: Precision value of the forecast.
+        capabilities: DataFrame containing details on all available coverage ids.
+    """
 
     # Model constants
     MODEL_NAME: str = "arpege"
@@ -87,24 +90,20 @@ class ArpegeForecast(Forecast):
         territory: str = "EUROPE",
         **kwargs: Any,
     ):
-        """
-        Initializes an ArpegeForecast object for accessing ARPEGE forecast data.
+        """Initializes an ArpegeForecast object.
 
         The `precision` of the forecast is inferred from the specified `territory`.
 
         Args:
-            territory (str, optional): The ARPEGE territory to fetch. Defaults to "EUROPE".
-            api_key (str | None, optional): The API key for authentication. Defaults to None.
-            token (str | None, optional): The API token for authentication. Defaults to None.
-            application_id (str | None, optional): The Application ID for authentication. Defaults to None.
-            cache_dir (str | None, optional): Path to the cache directory. Defaults to None.
-                If not provided, the cache directory is set to "/tmp/cache".
+            territory: The ARPEGE territory to fetch. Defaults to "EUROPE".
+            api_key: The API key for authentication. Defaults to None.
+            token: The API token for authentication. Defaults to None.
+            application_id: The Application ID for authentication. Defaults to None.
 
         Notes:
             - See `MeteoFranceClient` for additional details on the parameters `api_key`, `token`,
                 and `application_id`.
             - Available territories are listed in the `AVAILABLE_TERRITORY` constant.
-
         """
         super().__init__(
             client=client,
@@ -113,7 +112,11 @@ class ArpegeForecast(Forecast):
             **kwargs,
         )
 
-    def _validate_parameters(self):
-        """Assert the parameters are valid."""
+    def _validate_parameters(self) -> None:
+        """Check the territory and the precision parameters.
+
+        Raise:
+            ValueError: At least, one parameter is not good.
+        """
         if self.territory not in AVAILABLE_ARPEGE_TERRITORY:
             raise ValueError(f"The parameter precision must be in {AVAILABLE_ARPEGE_TERRITORY}")

@@ -27,20 +27,20 @@ repos:
       - id: check-added-large-files
         args: [--maxkb=500]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.3
+    rev: v0.8.6
     hooks:
       - id: ruff
         args: [--fix]
       - id: ruff-format
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.13.0
+    rev: v1.14.1
     hooks:
       - id: mypy
         args: [--config-file=pyproject.toml]
         files: src
         additional_dependencies: [pydantic~=2.0,types-pytz,types-requests,types-python-dateutil]
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.21.2
+    rev: v8.22.1
     hooks:
       - id: gitleaks
   - repo: https://github.com/pypa/pip-audit
@@ -49,12 +49,12 @@ repos:
       - id: pip-audit
         args: [--skip-editable]
   - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v3.6.0
+    rev: v4.0.0
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
         args: [feat, fix, ci, chore, test, docs]
   - repo: https://github.com/kynan/nbstripout
-    rev: 0.7.1
+    rev: 0.8.1
     hooks:
         - id: nbstripout

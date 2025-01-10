@@ -5,7 +5,7 @@ repo_name: MAIF/meteole
 site_author: OSSbyMAIF Team
 docs_dir: pages
 theme:
-  name: 'material'
+  name: material
   logo: assets/img/svg/meteole-fond-clair.svg
   favicon: assets/img/svg/meteole-git.svg
   palette:
@@ -14,14 +14,14 @@ theme:
       toggle:
         icon: material/brightness-auto
         name: Switch to light mode
-      primary: white
-      accent: red
+      primary: light green
+      accent: lime
 
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: white
-      accent: red
+      primary: light green
+      accent: lime
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
@@ -30,13 +30,13 @@ theme:
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: black
-      accent: red
+      accent: lime
       toggle:
         icon: material/brightness-4
         name: Switch to system preference
   font:
-    text: 'Roboto'
-    code: 'Roboto Mono'
+    text: Urbanist
+    code: Source Code Pro
   language: en
   features:
     - content.tabs.link
@@ -82,5 +82,3 @@ nav:
     - How to: how_to.md
   - Advanced User Guide:
     - Coverages: coverage_parameters.md
-extra_css:
-  - assets/css/mkdocs_extra.css

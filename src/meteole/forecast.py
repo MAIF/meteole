@@ -20,14 +20,17 @@ from meteole.errors import MissingDataError
 logger = logging.getLogger(__name__)
 
 
-class Forecast(ABC):
-    """(Abstract class)
-    Provides a unified interface to query AROME and ARPEGE endpoints
+class WeatherForecast(ABC):
+    """(Abstract)
+    Base class for weather forecast models.
 
-    Attributes
-    ----------
-    capabilities: pandas.DataFrame
-        coverage dataframe containing the details of all available coverage_ids
+    Note: Currently, this class is highly related to Meteo-France models.
+    This will not be the case in the future.
+
+    Attributes:
+        territory: Covered area (e.g., FRANCE, ANTIL, ...).
+        precision: Precision value of the forecast.
+        capabilities: DataFrame containing details on all available coverage ids.
     """
 
     # Class constants
@@ -54,7 +57,14 @@ class Forecast(ABC):
         precision: float = DEFAULT_PRECISION,
         **kwargs: Any,
     ):
-        """Init the Forecast object."""
+        """Initialize attributes.
+
+        Args:
+            territory: The ARPEGE territory to fetch.
+            api_key: The API key for authentication. Defaults to None.
+            token: The API token for authentication. Defaults to None.
+            application_id: The Application ID for authentication. Defaults to None.
+        """
         self.territory = territory  # "FRANCE", "ANTIL", or others (see API doc)
         self.precision = precision
         self._validate_parameters()
@@ -73,14 +83,26 @@ class Forecast(ABC):
 
     @property
     def capabilities(self) -> pd.DataFrame:
-        """TODO"""
+        """Getter method of the capabilities attribute.
+
+        Returns:
+            DataFrame of details on all available coverage ids.
+        """
         if self._capabilities is None:
             self._capabilities = self._build_capabilities()
         return self._capabilities
 
     @property
-    def indicators(self) -> pd.DataFrame:
-        """TODO"""
+    def indicators(self) -> list[str]:
+        """Getter method of the indicators.
+
+        Indicators are identifying the kind of a predicted value (i.e., measurement).
+
+        Warning: This method is deprecated as INDICATORS is now a class constant.
+
+        Returns:
+            List of covered indicators.
+        """
         warn(
             "The 'indicators' attribute is deprecated, it will be removed soon. "
             "Use 'INDICATORS' instead (class constant).",
@@ -90,35 +112,42 @@ class Forecast(ABC):
         return self.INDICATORS
 
     @abstractmethod
-    def _validate_parameters(self):
-        """Assert parameters are valid."""
-        pass
+    def _validate_parameters(self) -> None:
+        """Check the territory and the precision parameters.
+
+        Raise:
+            ValueError: At least, one parameter is not good.
+        """
+        raise NotImplementedError
 
     def get_capabilities(self) -> pd.DataFrame:
-        "Returns the coverage dataframe containing the details of all available coverage_ids"
+        """Explicit "getter method" of the capabilities attribute.
+
+        Returns:
+            DataFrame of details on all available coverage ids.
+        """
         return self.capabilities
 
-    def get_coverage_description(self, coverage_id: str) -> dict:
-        """This endpoint returns the available axis (times, heights) to properly query coverage
+    def get_coverage_description(self, coverage_id: str) -> dict[str, Any]:
+        """Return the available axis (times, heights) of a coverage.
 
-        TODO: other informations can be fetched from this endpoint, not yet implemented.
+        TODO: Other informations can be fetched, not yet implemented.
 
         Args:
-            coverage_id (str): use :meth:`get_capabilities()` to list all available coverage_id
-        """
+            coverage_id: An id of a coverage, use get_capabilities() to get them.
 
-        # Get coverage description
+        Returns:
+            A dictionary containing more info on the coverage.
+        """
         description = self._get_coverage_description(coverage_id)
         grid_axis = description["wcs:CoverageDescriptions"]["wcs:CoverageDescription"]["gml:domainSet"][
             "gmlrgrid:ReferenceableGridByVectors"
         ]["gmlrgrid:generalGridAxis"]
 
         return {
-            "forecast_horizons": [
-                int(time / 3600) for time in self.__class__._get_available_feature(grid_axis, "time")
-            ],
-            "heights": self.__class__._get_available_feature(grid_axis, "height"),
-            "pressures": self.__class__._get_available_feature(grid_axis, "pressure"),
+            "forecast_horizons": [int(time / 3600) for time in self._get_available_feature(grid_axis, "time")],
+            "heights": self._get_available_feature(grid_axis, "height"),
+            "pressures": self._get_available_feature(grid_axis, "pressure"),
         }
 
     def get_coverage(
@@ -133,24 +162,30 @@ class Forecast(ABC):
         interval: str | None = None,
         coverage_id: str = "",
     ) -> pd.DataFrame:
-        """Returns the data associated with the coverage_id for the selected parameters.
+        """Return the coverage data (i.e., the weather forecast data).
 
         Args:
-            coverage_id (str): coverage_id, get the list using :meth:`get_capabilities`
-            lat (tuple): minimum and maximum latitude
-            long (tuple): minimum and maximum longitude
-            heights (list): heights in meters
-            pressures (list): pressures in hPa
-            forecast_horizons (list): list of integers, representing the forecast horizon in hours
+            indicator: Indicator of a coverage to retrieve.
+            lat: Minimum and maximum latitude.
+            long: Minimum and maximum longitude.
+            heights: Heights in meters.
+            pressures: Pressures in hPa.
+            forecast_horizons: List of integers, representing the forecast horizons in hours.
+            run: The model inference timestamp. If None, defaults to the latest available run.
+                Expected format: "YYYY-MM-DDTHH:MM:SSZ".
+            interval: The aggregation period. Must be None for instant indicators;
+                    raises an error if specified. Defaults to "P1D" for time-aggregated indicators such
+                    as TOTAL_PRECIPITATION.
+            coverage_id: An id of a coverage, use get_capabilities() to get them.
 
         Returns:
             pd.DataFrame: The complete run for the specified execution.
         """
-        # ensure we only have one of coverage_id, indicator
+        # Ensure we only have one of coverage_id, indicator
         if not bool(indicator) ^ bool(coverage_id):
             raise ValueError("Argument `indicator` or `coverage_id` need to be set (only one of them)")
 
-        if indicator:
+        if indicator is not None:
             coverage_id = self._get_coverage_id(indicator, run, interval)
 
         logger.info(f"Using `coverage_id={coverage_id}`")
@@ -180,7 +215,12 @@ class Forecast(ABC):
         return pd.concat(df_list, axis=0).reset_index(drop=True)
 
     def _build_capabilities(self) -> pd.DataFrame:
-        "Returns the coverage dataframe containing the details of all available coverage_ids"
+        """(Protected)
+        Fetch and build the model capabilities.
+
+        Returns:
+            DataFrame all the details.
+        """
 
         logger.info("Fetching all available coverages...")
 
@@ -222,14 +262,14 @@ class Forecast(ABC):
         run: str | None = None,
         interval: str | None = None,
     ) -> str:
-        """
-        Retrieves a `coverage_id` from the capabilities based on the provided parameters.
+        """(Protected)
+        Retrieve a `coverage_id` from the capabilities based on the provided parameters.
 
         Args:
-            indicator (str): The indicator to retrieve. This parameter is required.
-            run (str | None, optional): The model inference timestamp. If None, defaults to the latest available run.
+            indicator: The indicator to retrieve. This parameter is required.
+            run: The model inference timestamp. If None, defaults to the latest available run.
                 Expected format: "YYYY-MM-DDTHH:MM:SSZ". Defaults to None.
-            interval (str | None, optional): The aggregation period. Must be None for instant indicators;
+            interval: The aggregation period. Must be None for instant indicators;
                 raises an error if specified. Defaults to "P1D" for time-aggregated indicators such as
                 TOTAL_PRECIPITATION.
 
@@ -292,7 +332,8 @@ class Forecast(ABC):
     def _raise_if_invalid_or_fetch_default(
         self, param_name: str, inputs: list[int] | None, availables: list[int]
     ) -> list[int]:
-        """Checks validity of `inputs`.
+        """(Protected)
+        Checks validity of `inputs`.
 
         Checks if the elements in `inputs` are in `availables` and raises a ValueError if not.
         If `inputs` is empty or None, uses the first element from `availables` as the default value.
@@ -320,8 +361,12 @@ class Forecast(ABC):
                 logger.info(f"Using `{param_name}={inputs}`")
         return inputs
 
-    def _fetch_capabilities(self) -> dict:
-        """The Capabilities of the AROME/ARPEGE service."""
+    def _fetch_capabilities(self) -> dict[Any, Any]:
+        """Fetch the model capabilities.
+
+        Returns:
+            Raw capabilities (dictionary).
+        """
 
         url = f"{self._model_base_path}/{self._entry_point}/GetCapabilities"
         params = {
@@ -346,10 +391,11 @@ class Forecast(ABC):
             logger.error(f"Response: {xml}")
             raise e
 
-    def _get_coverage_description(self, coverage_id: str) -> dict:
-        """Get the description of a coverage.
+    def _get_coverage_description(self, coverage_id: str) -> dict[Any, Any]:
+        """(Protected)
+        Get the description of a coverage.
 
-        .. warning::
+        Warning:
             The return value is the raw XML data.
             Not yet parsed to be usable.
             In the future, it should be possible to use it to
@@ -372,7 +418,12 @@ class Forecast(ABC):
         return xmltodict.parse(response.text)
 
     def _transform_grib_to_df(self) -> pd.DataFrame:
-        "Transform grib file into pandas dataframe"
+        """(Protected)
+        Transform grib file into pandas dataframe.
+
+        Returns:
+            DataFrame of the read data.
+        """
 
         ds = xr.open_dataset(self.filepath, engine="cfgrib")
         df = ds.to_dataframe().reset_index()
@@ -387,7 +438,8 @@ class Forecast(ABC):
         lat: tuple,
         long: tuple,
     ) -> pd.DataFrame:
-        """Returns the forecasts for a given time and indicator.
+        """(Protected)
+        Return the forecast's data for a given time and indicator.
 
         Args:
             coverage_id (str): the indicator.
@@ -496,8 +548,8 @@ class Forecast(ABC):
         file_format: str = "grib",
         filepath: Path | None = None,
     ) -> Path:
-        """
-        Retrieves raster data for a specified model prediction and saves it to a file.
+        """(Protected)
+        Retrieve raster data for a specified model prediction and saves it to a file.
 
         If no `filepath` is provided, the file is saved to a default cache directory under
         the current working directory.
@@ -565,14 +617,28 @@ class Forecast(ABC):
         return self.filepath
 
     @staticmethod
-    def _get_available_feature(grid_axis, feature_name):
-        features = []
-        feature_grid_axis = [
-            ax for ax in grid_axis if ax["gmlrgrid:GeneralGridAxis"]["gmlrgrid:gridAxesSpanned"] == feature_name
+    def _get_available_feature(grid_axis: list[dict[str, Any]], feature_name: str) -> list[int]:
+        """(Protected)
+        Retrieve available features.
+
+        TODO: add more details here.
+
+        Args:
+            grid_axis: ?
+            feature_name: ?
+
+        Returns:
+            List of available feature.
+        """
+        feature_grid_axis: list[dict[str, Any]] = [
+            ax for ax in grid_axis if str(ax["gmlrgrid:GeneralGridAxis"]["gmlrgrid:gridAxesSpanned"]) == feature_name
         ]
-        if feature_grid_axis:
-            features = feature_grid_axis[0]["gmlrgrid:GeneralGridAxis"]["gmlrgrid:coefficients"].split(" ")
-            features = [int(feature) for feature in features]
+
+        features: list[int] = (
+            list(map(int, feature_grid_axis[0]["gmlrgrid:GeneralGridAxis"]["gmlrgrid:coefficients"].split(" ")))
+            if len(feature_grid_axis) > 0
+            else []
+        )
         return features
 
     def get_combined_coverage(
@@ -598,8 +664,9 @@ class Forecast(ABC):
             runs (list[str]): A list of runs for each indicator. Format should be "YYYY-MM-DDTHH:MM:SSZ".
             heights (list[int] | None): A list of heights in meters to filter by (default is None).
             pressures (list[int] | None): A list of pressures in hPa to filter by (default is None).
-            intervals (list[str] | None): A list of aggregation periods (default is None). Must be `None` or "" for instant indicators;
-                                              otherwise, raises an exception. Defaults to 'P1D' for time-aggregated indicators.
+            intervals (list[str] | None): A list of aggregation periods (default is None).
+                    Must be `None` or "" for instant indicators ; otherwise, raises an exception.
+                    Defaults to 'P1D' for time-aggregated indicators.
             lat (tuple): The latitude range as (min_latitude, max_latitude). Defaults to FRANCE_METRO_LATITUDES.
             long (tuple): The longitude range as (min_longitude, max_longitude). Defaults to FRANCE_METRO_LONGITUDES.
             forecast_horizons (list[int] | None): A list of forecast horizon values in hours. Defaults to None.
@@ -609,9 +676,8 @@ class Forecast(ABC):
 
         Raises:
             ValueError: If the length of `heights` does not match the length of `indicator_names`.
-
         """
-        if not runs:
+        if runs is None:
             runs = [None]
         coverages = [
             self._get_combined_coverage_for_single_run(
@@ -639,7 +705,7 @@ class Forecast(ABC):
         long: tuple = FRANCE_METRO_LONGITUDES,
         forecast_horizons: list[int] | None = None,
     ) -> pd.DataFrame:
-        """
+        """(Protected)
         Get a combined DataFrame of coverage data for a given run considering a list of indicators.
 
         This method retrieves and aggregates coverage data for specified indicators, with options
@@ -651,8 +717,9 @@ class Forecast(ABC):
             run (str): A single runs for each indicator. Format should be "YYYY-MM-DDTHH:MM:SSZ".
             heights (list[int] | None): A list of heights in meters to filter by (default is None).
             pressures (list[int] | None): A list of pressures in hPa to filter by (default is None).
-            intervals (Optional[list[str]]): A list of aggregation periods (default is None). Must be `None` or "" for instant indicators;
-                                              otherwise, raises an exception. Defaults to 'P1D' for time-aggregated indicators.
+            intervals (Optional[list[str]]): A list of aggregation periods (default is None).
+                    Must be `None` or "" for instant indicators ; otherwise, raises an exception.
+                    Defaults to 'P1D' for time-aggregated indicators.
             lat (tuple): The latitude range as (min_latitude, max_latitude). Defaults to FRANCE_METRO_LATITUDES.
             long (tuple): The longitude range as (min_longitude, max_longitude). Defaults to FRANCE_METRO_LONGITUDES.
             forecast_horizons (list[int] | None): A list of forecast horizon values in hours. Defaults to None.
@@ -662,16 +729,29 @@ class Forecast(ABC):
 
         Raises:
             ValueError: If the length of `heights` does not match the length of `indicator_names`.
-
         """
 
-        def _check_params_length(params: list | None, arg_name: str) -> list:
-            """assert length is ok or raise"""
+        def _check_params_length(params: list[Any] | None, arg_name: str) -> list[Any]:
+            """(Protected)
+            Assert length is ok or raise an error.
+
+            Args:
+                params: list of parameters.
+                arg_name: argument name.
+
+            Returns:
+                The given parameters unchanged.
+
+            Raises:
+                ValueError: The length of {arg_name} must match the length of indicator_names.
+            """
             if params is None:
                 return [None] * len(indicator_names)
             if len(params) != len(indicator_names):
                 raise ValueError(
-                    f"The length of {arg_name} must match the length of indicator_names. If you want multiple {arg_name} for a single indicator, create multiple entries in `indicator_names`."
+                    f"The length of {arg_name} must match the length of indicator_names."
+                    f" If you want multiple {arg_name} for a single indicator, create multiple"
+                    " entries in `indicator_names`."
                 )
             return params
 
@@ -719,14 +799,16 @@ class Forecast(ABC):
         )
 
     def _get_forecast_horizons(self, coverage_ids: list[str]) -> list[list[int]]:
-        """
+        """(Protected)
         Retrieve the times for each coverage_id.
-        Parameters:
-        coverage_ids (list[str]): List of coverage IDs.
+
+        Args:
+            coverage_ids: List of coverage IDs.
+
         Returns:
-        list[list[int]]: List of times for each coverage ID.
+            List of times for each coverage ID.
         """
-        indicator_times = []
+        indicator_times: list[list[int]] = []
         for coverage_id in coverage_ids:
             times = self.get_coverage_description(coverage_id)["forecast_horizons"]
             indicator_times.append(times)
@@ -736,13 +818,16 @@ class Forecast(ABC):
         self,
         list_coverage_id: list[str],
     ) -> list[int]:
-        """
-        Find common forecast_horizons among coverage IDs.
-        indicator_names (list[str]): List of indicator names.
-        run (Optional[str]): Identifies the model inference. Defaults to latest if None. Format "YYYY-MM-DDTHH:MM:SSZ".
-        intervals (Optional[list[str]]): List of aggregation periods. Must be None for instant indicators, otherwise raises. Defaults to P1D for time-aggregated indicators like TOTAL_PRECIPITATION.
+        """Find common forecast_horizons among coverage IDs.
+
+        Args:
+            indicator_names: List of indicator names.
+            run: Identifies the model inference. Defaults to latest if None. Format "YYYY-MM-DDTHH:MM:SSZ".
+            intervals: List of aggregation periods. Must be None for instant indicators, otherwise raises.
+                    Defaults to P1D for time-aggregated indicators like TOTAL_PRECIPITATION.
+
         Returns:
-        list[int]: Common forecast_horizons
+            List of common forecast_horizons.
         """
         indicator_forecast_horizons = self._get_forecast_horizons(list_coverage_id)
 
@@ -757,13 +842,15 @@ class Forecast(ABC):
         return sorted(common_forecast_horizons)
 
     def _validate_forecast_horizons(self, coverage_ids: list[str], forecast_horizons: list[int]) -> list[str]:
-        """
+        """(Protected)
         Validate forecast_horizons for a list of coverage IDs.
-        Parameters:
-        coverage_ids (list[str]): List of coverage IDs.
-        forecast_horizons (list[int]): List of time forecasts to validate.
+
+        Args:
+            coverage_ids: List of coverage IDs.
+            forecast_horizons: List of time forecasts to validate.
+
         Returns:
-        list[str]: List of invalid coverage IDs.
+            List of invalid coverage IDs.
         """
         indicator_forecast_horizons = self._get_forecast_horizons(coverage_ids)
 
