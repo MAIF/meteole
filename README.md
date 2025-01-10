@@ -6,7 +6,7 @@
 </p>
 <p align="center">
   <img src="https://github.com/MAIF/meteole/actions/workflows/ci-cd.yml/badge.svg?branch=main" alt="CI">
-  <img src="https://img.shields.io/badge/coverage-90%25-dark_green" alt="Coverage">
+  <img src="https://img.shields.io/badge/coverage-89%25-dark_green" alt="Coverage">
   <img src="https://img.shields.io/pypi/v/meteole" alt="Versions">
   <img src="https://img.shields.io/pypi/pyversions/meteole" alt="Python">
   <img src="https://img.shields.io/pypi/dm/meteole" alt="Downloads">
