@@ -1,8 +1,6 @@
-import os
 import unittest
-from pathlib import Path
 from unittest.mock import MagicMock, patch
-
+import datetime as dt
 import pandas as pd
 import pytest
 
@@ -171,7 +169,7 @@ class TestAromeForecast(unittest.TestCase):
             coverage_id="coverage_1",
             height=None,
             pressure=None,
-            forecast_horizon=0,
+            forecast_horizon=dt.timedelta(hours=0),
             lat=(37.5, 55.4),
             long=(-12, 16),
         )
@@ -197,7 +195,7 @@ class TestAromeForecast(unittest.TestCase):
             coverage_id="coverage_1",
             height=2,
             pressure=None,
-            forecast_horizon=0,
+            forecast_horizon=dt.timedelta(hours=0),
             lat=(37.5, 55.4),
             long=(-12, 16),
         )
@@ -218,7 +216,11 @@ class TestAromeForecast(unittest.TestCase):
                 "data": [19, 20, 21],  # this column name varies depending on the coverage_id
             }
         )
-        mock_get_coverage_description.return_value = {"heights": [2], "forecast_horizons": [0], "pressures": []}
+        mock_get_coverage_description.return_value = {
+            "heights": [2],
+            "forecast_horizons": [dt.timedelta(hours=0)],
+            "pressures": [],
+        }
 
         forecast = AromeForecast(
             self.client,
@@ -229,22 +231,35 @@ class TestAromeForecast(unittest.TestCase):
         forecast.get_coverage(
             coverage_id="toto",
             heights=[2],
-            forecast_horizons=[0],
+            forecast_horizons=[dt.timedelta(hours=0)],
             lat=(37.5, 55.4),
             long=(-12, 16),
         )
 
         mock_get_data_single_forecast.assert_called_once_with(
-            coverage_id="toto", height=2, pressure=None, forecast_horizon=0, lat=(37.5, 55.4), long=(-12, 16)
+            coverage_id="toto",
+            height=2,
+            pressure=None,
+            forecast_horizon=dt.timedelta(hours=0),
+            lat=(37.5, 55.4),
+            long=(-12, 16),
         )
 
     @patch("meteole._arome.AromeForecast.get_coverage_description")
     def test_get_forecast_horizons(self, mock_get_coverage_description):
         def side_effect(coverage_id):
             if coverage_id == "id1":
-                return {"forecast_horizons": [0, 1, 2], "heights": [], "pressures": []}
+                return {
+                    "forecast_horizons": [dt.timedelta(hours=0), dt.timedelta(hours=1), dt.timedelta(hours=2)],
+                    "heights": [],
+                    "pressures": [],
+                }
             elif coverage_id == "id2":
-                return {"forecast_horizons": [0, 2, 3], "heights": [], "pressures": []}
+                return {
+                    "forecast_horizons": [dt.timedelta(hours=0), dt.timedelta(hours=1), dt.timedelta(hours=2)],
+                    "heights": [],
+                    "pressures": [],
+                }
 
         mock_get_coverage_description.side_effect = side_effect
 
@@ -255,16 +270,23 @@ class TestAromeForecast(unittest.TestCase):
         )
 
         coverage_ids = ["id1", "id2"]
-        expected_result = [[0, 1, 2], [0, 2, 3]]
+        expected_result = [
+            [dt.timedelta(hours=0), dt.timedelta(hours=1), dt.timedelta(hours=2)],
+            [dt.timedelta(hours=0), dt.timedelta(hours=1), dt.timedelta(hours=2)],
+        ]
         result = forecast._get_forecast_horizons(coverage_ids)
         self.assertEqual(result, expected_result)
 
     @patch("meteole._arome.AromeForecast._get_forecast_horizons")
     def test_find_common_forecast_horizons(self, mock_get_forecast_horizons):
-        mock_get_forecast_horizons.return_value = [[0, 1, 2, 3], [2, 3, 4, 5], [1, 2, 3, 6]]
+        mock_get_forecast_horizons.return_value = [
+            [dt.timedelta(hours=0), dt.timedelta(hours=1), dt.timedelta(hours=2), dt.timedelta(hours=3)],
+            [dt.timedelta(hours=2), dt.timedelta(hours=3), dt.timedelta(hours=4), dt.timedelta(hours=5)],
+            [dt.timedelta(hours=1), dt.timedelta(hours=2), dt.timedelta(hours=3), dt.timedelta(hours=6)],
+        ]
 
         list_coverage_id = ["id1", "id2", "id3"]
-        expected_result = [2, 3]
+        expected_result = [dt.timedelta(hours=2), dt.timedelta(hours=3)]
 
         forecast = AromeForecast(
             self.client,
@@ -276,10 +298,13 @@ class TestAromeForecast(unittest.TestCase):
 
     @patch("meteole._arome.AromeForecast._get_forecast_horizons")
     def test_validate_forecast_horizons_valid(self, mock_get_forecast_horizons):
-        mock_get_forecast_horizons.return_value = [[0, 1, 2, 3], [2, 3, 4, 5]]
+        mock_get_forecast_horizons.return_value = [
+            [dt.timedelta(hours=0), dt.timedelta(hours=1), dt.timedelta(hours=2), dt.timedelta(hours=3)],
+            [dt.timedelta(hours=2), dt.timedelta(hours=3), dt.timedelta(hours=4), dt.timedelta(hours=5)],
+        ]
 
         coverage_ids = ["id1", "id2"]
-        forecast_horizons = [2, 3]
+        forecast_horizons = [dt.timedelta(hours=2), dt.timedelta(hours=3)]
         expected_result = []
 
         forecast = AromeForecast(
@@ -292,10 +317,13 @@ class TestAromeForecast(unittest.TestCase):
 
     @patch("meteole._arome.AromeForecast._get_forecast_horizons")
     def test_validate_forecast_horizons_invalid(self, mock_get_forecast_horizons):
-        mock_get_forecast_horizons.return_value = [[0, 1, 2, 3], [2, 3, 4, 5]]
+        mock_get_forecast_horizons.return_value = [
+            [dt.timedelta(hours=0), dt.timedelta(hours=1), dt.timedelta(hours=2), dt.timedelta(hours=3)],
+            [dt.timedelta(hours=2), dt.timedelta(hours=3), dt.timedelta(hours=4), dt.timedelta(hours=5)],
+        ]
 
         coverage_ids = ["id1", "id2"]
-        forecast_horizons = [1, 2]
+        forecast_horizons = [dt.timedelta(hours=1), dt.timedelta(hours=2)]
         expected_result = ["id2"]
 
         forecast = AromeForecast(
@@ -318,7 +346,7 @@ class TestAromeForecast(unittest.TestCase):
         mock_get_coverage_id,
     ):
         mock_get_coverage_id.side_effect = lambda indicator, run, interval: f"{indicator}_{run}_{interval}"
-        mock_find_common_forecast_horizons.return_value = [0]
+        mock_find_common_forecast_horizons.return_value = [dt.timedelta(hours=0)]
         mock_validate_forecast_horizons.return_value = []
         mock_get_coverage.side_effect = [
             pd.DataFrame(
@@ -326,7 +354,7 @@ class TestAromeForecast(unittest.TestCase):
                     "latitude": [1, 2],
                     "longitude": [3, 4],
                     "run": ["2024-12-13T00.00.00Z", "2024-12-13T00.00.00Z"],
-                    "forecast_horizon": [0, 0],
+                    "forecast_horizon": [dt.timedelta(hours=0), dt.timedelta(hours=0)],
                     "data1": [10, 20],
                 }
             ),
@@ -335,7 +363,7 @@ class TestAromeForecast(unittest.TestCase):
                     "latitude": [1, 2],
                     "longitude": [3, 4],
                     "run": ["2024-12-13T00.00.00Z", "2024-12-13T00.00.00Z"],
-                    "forecast_horizon": [0, 0],
+                    "forecast_horizon": [dt.timedelta(hours=0), dt.timedelta(hours=0)],
                     "data2": [30, 40],
                 }
             ),
@@ -351,14 +379,14 @@ class TestAromeForecast(unittest.TestCase):
         intervals = ["", "P1D"]
         lat = (37.5, 55.4)
         long = (-12, 16)
-        forecast_horizons = [0]
+        forecast_horizons = [dt.timedelta(hours=0)]
 
         expected_result = pd.DataFrame(
             {
                 "latitude": [1, 2],
                 "longitude": [3, 4],
                 "run": ["2024-12-13T00.00.00Z", "2024-12-13T00.00.00Z"],
-                "forecast_horizon": [0, 0],
+                "forecast_horizon": [dt.timedelta(hours=0), dt.timedelta(hours=0)],
                 "data1": [10, 20],
                 "data2": [30, 40],
             }
@@ -387,7 +415,7 @@ class TestAromeForecast(unittest.TestCase):
         mock_get_coverage_id,
     ):
         mock_get_coverage_id.side_effect = lambda indicator, run, interval: f"{indicator}_{run}_{interval}"
-        mock_find_common_forecast_horizons.return_value = [0]
+        mock_find_common_forecast_horizons.return_value = [dt.timedelta(hours=0)]
         mock_validate_forecast_horizons.return_value = [
             "GEOMETRIC_HEIGHT__GROUND_OR_WATER_SURFACE_2024-12-13T00.00.00Z"
         ]
@@ -402,7 +430,7 @@ class TestAromeForecast(unittest.TestCase):
         intervals = ["", "P1D"]
         lat = (37.5, 55.4)
         long = (-12, 16)
-        forecast_horizons = [0]
+        forecast_horizons = [dt.timedelta(hours=0)]
 
         forecast = AromeForecast(
             self.client,
@@ -429,7 +457,7 @@ class TestAromeForecast(unittest.TestCase):
     ):
         # Mock return values
         mock_get_coverage_id.side_effect = lambda indicator, run, interval: f"{indicator}_{run}_{interval}"
-        mock_find_common_forecast_horizons.return_value = [0]
+        mock_find_common_forecast_horizons.return_value = [dt.timedelta(hours=0)]
         mock_validate_forecast_horizons.return_value = []
         mock_get_coverage.side_effect = [
             pd.DataFrame(
@@ -437,7 +465,7 @@ class TestAromeForecast(unittest.TestCase):
                     "latitude": [1, 2],
                     "longitude": [3, 4],
                     "run": ["2024-12-13T00.00.00Z", "2024-12-13T00.00.00Z"],
-                    "forecast_horizon": [0, 0],
+                    "forecast_horizon": [dt.timedelta(hours=0), dt.timedelta(hours=0)],
                     "data1": [10, 20],
                 }
             ),
@@ -446,7 +474,7 @@ class TestAromeForecast(unittest.TestCase):
                     "latitude": [1, 2],
                     "longitude": [3, 4],
                     "run": ["2024-12-13T00.00.00Z", "2024-12-13T00.00.00Z"],
-                    "forecast_horizon": [0, 0],
+                    "forecast_horizon": [dt.timedelta(hours=0), dt.timedelta(hours=0)],
                     "data2": [30, 40],
                 }
             ),
@@ -455,7 +483,7 @@ class TestAromeForecast(unittest.TestCase):
                     "latitude": [1, 2],
                     "longitude": [3, 4],
                     "run": ["2024-12-14T00.00.00Z", "2024-12-14T00.00.00Z"],
-                    "forecast_horizon": [0, 0],
+                    "forecast_horizon": [dt.timedelta(hours=0), dt.timedelta(hours=0)],
                     "data1": [100, 200],
                 }
             ),
@@ -464,7 +492,7 @@ class TestAromeForecast(unittest.TestCase):
                     "latitude": [1, 2],
                     "longitude": [3, 4],
                     "run": ["2024-12-14T00.00.00Z", "2024-12-14T00.00.00Z"],
-                    "forecast_horizon": [0, 0],
+                    "forecast_horizon": [dt.timedelta(hours=0), dt.timedelta(hours=0)],
                     "data2": [300, 400],
                 }
             ),
@@ -480,14 +508,19 @@ class TestAromeForecast(unittest.TestCase):
         intervals = ["", "P1D"]
         lat = (37.5, 55.4)
         long = (-12, 16)
-        forecast_horizons = [0]
+        forecast_horizons = [dt.timedelta(hours=0)]
 
         expected_result = pd.DataFrame(
             {
                 "latitude": [1, 2, 1, 2],
                 "longitude": [3, 4, 3, 4],
                 "run": ["2024-12-13T00.00.00Z", "2024-12-13T00.00.00Z", "2024-12-14T00.00.00Z", "2024-12-14T00.00.00Z"],
-                "forecast_horizon": [0, 0, 0, 0],
+                "forecast_horizon": [
+                    dt.timedelta(hours=0),
+                    dt.timedelta(hours=0),
+                    dt.timedelta(hours=0),
+                    dt.timedelta(hours=0),
+                ],
                 "data1": [10, 20, 100, 200],
                 "data2": [30, 40, 300, 400],
             }
@@ -516,7 +549,7 @@ class TestAromeForecast(unittest.TestCase):
         mock_get_coverage_id,
     ):
         mock_get_coverage_id.side_effect = lambda indicator, run, interval: f"{indicator}_{run}_{interval}"
-        mock_find_common_forecast_horizons.return_value = [0]
+        mock_find_common_forecast_horizons.return_value = [dt.timedelta(hours=0)]
         mock_validate_forecast_horizons.return_value = []
         mock_get_coverage.side_effect = [
             pd.DataFrame(
@@ -524,7 +557,7 @@ class TestAromeForecast(unittest.TestCase):
                     "latitude": [1, 2],
                     "longitude": [3, 4],
                     "run": ["2024-12-13T00.00.00Z", "2024-12-13T00.00.00Z"],
-                    "forecast_horizon": [0, 0],
+                    "forecast_horizon": [dt.timedelta(hours=0), dt.timedelta(hours=0)],
                     "data1": [10, 20],
                 }
             ),
@@ -533,7 +566,7 @@ class TestAromeForecast(unittest.TestCase):
                     "latitude": [1, 2],
                     "longitude": [3, 4],
                     "run": ["2024-12-13T00.00.00Z", "2024-12-13T00.00.00Z"],
-                    "forecast_horizon": [0, 0],
+                    "forecast_horizon": [dt.timedelta(hours=0), dt.timedelta(hours=0)],
                     "data2": [30, 40],
                 }
             ),
@@ -549,14 +582,14 @@ class TestAromeForecast(unittest.TestCase):
         intervals = ["", "P1D"]
         lat = (37.5, 55.4)
         long = (-12, 16)
-        forecast_horizons = [0]
+        forecast_horizons = [dt.timedelta(hours=0)]
 
         expected_result = pd.DataFrame(
             {
                 "latitude": [1, 2],
                 "longitude": [3, 4],
                 "run": ["2024-12-13T00.00.00Z", "2024-12-13T00.00.00Z"],
-                "forecast_horizon": [0, 0],
+                "forecast_horizon": [dt.timedelta(hours=0), dt.timedelta(hours=0)],
                 "data1": [10, 20],
                 "data2": [30, 40],
             }
@@ -593,7 +626,7 @@ class TestAromeForecast(unittest.TestCase):
                     "latitude": [1, 2],
                     "longitude": [3, 4],
                     "run": ["2024-12-13T00.00.00Z", "2024-12-13T00.00.00Z"],
-                    "forecast_horizon": [0, 0],
+                    "forecast_horizon": [dt.timedelta(hours=0), dt.timedelta(hours=0)],
                     "data1": [10, 20],
                 }
             ),
@@ -602,7 +635,7 @@ class TestAromeForecast(unittest.TestCase):
                     "latitude": [1, 2],
                     "longitude": [3, 4],
                     "run": ["2024-12-13T00.00.00Z", "2024-12-13T00.00.00Z"],
-                    "forecast_horizon": [0, 0],
+                    "forecast_horizon": [dt.timedelta(hours=0), dt.timedelta(hours=0)],
                     "data2": [30, 40],
                 }
             ),
@@ -619,7 +652,7 @@ class TestAromeForecast(unittest.TestCase):
                 "latitude": [1, 2],
                 "longitude": [3, 4],
                 "run": ["2024-12-13T00.00.00Z", "2024-12-13T00.00.00Z"],
-                "forecast_horizon": [0, 0],
+                "forecast_horizon": [dt.timedelta(hours=0), dt.timedelta(hours=0)],
                 "data1": [10, 20],
                 "data2": [30, 40],
             }
