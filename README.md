@@ -44,7 +44,7 @@ pip install meteole
 
 ### Step 1: Obtain an API token or key
 
-Create an account on [the Météo-France API portal](https://portail-api.meteofrance.fr/). Next, subscribe to the desired APIs (Arome, Arpege, etc.). Retrieve the API token (or key) by going to “Mes APIs” and then “Générer token”.
+Create an account on [the Météo-France API portal](https://portail-api.meteofrance.fr/). Next, subscribe to the desired APIs (Arome, Arpege, Arome Instantané, etc.). Retrieve the API token (or key) by going to “Mes APIs” and then “Générer token”.
 
 ### Step 2: Fetch Forecasts from AROME and ARPEGE
 

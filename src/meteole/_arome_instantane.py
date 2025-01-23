@@ -62,7 +62,7 @@ AROME_OTHER_INDICATORS: list[str] = [
 
 
 @final
-class AromeInstantaneForecast(WeatherForecast):
+class AromePIForecast(WeatherForecast):
     """Access the AROME numerical weather forecast data from Meteo-France API.
 
     Doc:
