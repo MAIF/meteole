@@ -1,6 +1,6 @@
 Weather forecasts from Météo-France APIs are based on key parameters that vary from indicator to indicator, which makes them complex to use.
 
-Understanding coverages is a must to have a comprehensive usage of Météo-France forecasting models like AROME or ARPEGE.
+Understanding coverages is a must to have a comprehensive usage of Météo-France forecasting models like AROME, AROME INSTANTANÉ or ARPEGE.
 
 ## Coverage_id
 
@@ -38,7 +38,7 @@ When no interval is specified, it means coverage returns a single datapoint inst
 ## Others parameters
 ### Forecast_horizons
 The time of day to which the prediction corresponds must be specified. For example, for a run of 12:00, in 1 hour's time, we have the weather indicator prediction of 13:00.
-The `get_coverage method` takes as (optional) parameter the list of desired forecast hours, named `forecast_horizons`.
+The `get_coverage method` takes as (optional) parameter the list of desired forecast hours (in `dt.timedelta` format), named `forecast_horizons`.
 
 To get the list of available `forecast_horizons`, use the function `get_coverage_description` as described in the example below.
 

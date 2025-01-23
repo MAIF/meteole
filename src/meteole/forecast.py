@@ -131,7 +131,9 @@ class WeatherForecast(ABC):
         ]["gmlrgrid:generalGridAxis"]
 
         return {
-            "forecast_horizons": [int(time / 3600) for time in self._get_available_feature(grid_axis, "time")],
+            "forecast_horizons": [
+                dt.timedelta(seconds=time) for time in self._get_available_feature(grid_axis, "time")
+            ],
             "heights": self._get_available_feature(grid_axis, "height"),
             "pressures": self._get_available_feature(grid_axis, "pressure"),
         }
@@ -143,7 +145,7 @@ class WeatherForecast(ABC):
         long: tuple = FRANCE_METRO_LONGITUDES,
         heights: list[int] | None = None,
         pressures: list[int] | None = None,
-        forecast_horizons: list[int] | None = None,
+        forecast_horizons: list[dt.timedelta] | None = None,
         run: str | None = None,
         interval: str | None = None,
         coverage_id: str = "",
@@ -156,7 +158,7 @@ class WeatherForecast(ABC):
             long: Minimum and maximum longitude.
             heights: Heights in meters.
             pressures: Pressures in hPa.
-            forecast_horizons: List of integers, representing the forecast horizons in hours.
+            forecast_horizons: List of timedelta, representing the forecast horizons in hours.
             run: The model inference timestamp. If None, defaults to the latest available run.
                 Expected format: "YYYY-MM-DDTHH:MM:SSZ".
             interval: The aggregation period. Must be None for instant indicators;
@@ -315,9 +317,7 @@ class WeatherForecast(ABC):
 
         return coverage_id
 
-    def _raise_if_invalid_or_fetch_default(
-        self, param_name: str, inputs: list[int] | None, availables: list[int]
-    ) -> list[int]:
+    def _raise_if_invalid_or_fetch_default(self, param_name: str, inputs: list | None, availables: list) -> list:
         """(Protected)
         Checks validity of `inputs`.
 
@@ -444,7 +444,7 @@ class WeatherForecast(ABC):
     def _get_data_single_forecast(
         self,
         coverage_id: str,
-        forecast_horizon: int,
+        forecast_horizon: dt.timedelta,
         pressure: int | None,
         height: int | None,
         lat: tuple,
@@ -457,7 +457,7 @@ class WeatherForecast(ABC):
             coverage_id (str): the indicator.
             height (int): height in meters
             pressure (int): pressure in hPa
-            forecast_horizon (int): the forecast horizon in hours (how many hours ahead)
+            forecast_horizon (dt.timedelta): the forecast horizon (how much time ahead?)
             lat (tuple): minimum and maximum latitude
             long (tuple): minimum and maximum longitude
 
@@ -469,7 +469,7 @@ class WeatherForecast(ABC):
             coverage_id=coverage_id,
             height=height,
             pressure=pressure,
-            forecast_horizon_in_seconds=forecast_horizon * 3600,
+            forecast_horizon_in_seconds=int(forecast_horizon.total_seconds()),
             lat=lat,
             long=long,
         )
@@ -604,7 +604,7 @@ class WeatherForecast(ABC):
         intervals: list[str | None] | None = None,
         lat: tuple = FRANCE_METRO_LATITUDES,
         long: tuple = FRANCE_METRO_LONGITUDES,
-        forecast_horizons: list[int] | None = None,
+        forecast_horizons: list[dt.timedelta] | None = None,
     ) -> pd.DataFrame:
         """
         Get a combined DataFrame of coverage data for multiple indicators and different runs.
@@ -623,7 +623,7 @@ class WeatherForecast(ABC):
                     Defaults to 'P1D' for time-aggregated indicators.
             lat (tuple): The latitude range as (min_latitude, max_latitude). Defaults to FRANCE_METRO_LATITUDES.
             long (tuple): The longitude range as (min_longitude, max_longitude). Defaults to FRANCE_METRO_LONGITUDES.
-            forecast_horizons (list[int] | None): A list of forecast horizon values in hours. Defaults to None.
+            forecast_horizons (list[dt.timedelta] | None): A list of forecast horizon values in hours. Defaults to None.
 
         Returns:
             pd.DataFrame: A combined DataFrame containing coverage data for all specified runs and indicators.
@@ -657,7 +657,7 @@ class WeatherForecast(ABC):
         intervals: list[str | None] | None = None,
         lat: tuple = FRANCE_METRO_LATITUDES,
         long: tuple = FRANCE_METRO_LONGITUDES,
-        forecast_horizons: list[int] | None = None,
+        forecast_horizons: list[dt.timedelta] | None = None,
     ) -> pd.DataFrame:
         """(Protected)
         Get a combined DataFrame of coverage data for a given run considering a list of indicators.
@@ -676,7 +676,7 @@ class WeatherForecast(ABC):
                     Defaults to 'P1D' for time-aggregated indicators.
             lat (tuple): The latitude range as (min_latitude, max_latitude). Defaults to FRANCE_METRO_LATITUDES.
             long (tuple): The longitude range as (min_longitude, max_longitude). Defaults to FRANCE_METRO_LONGITUDES.
-            forecast_horizons (list[int] | None): A list of forecast horizon values in hours. Defaults to None.
+            forecast_horizons (list[dt.timedelta] | None): A list of forecast horizon values (as a dt.timedelta object). Defaults to None.
 
         Returns:
             pd.DataFrame: A combined DataFrame containing coverage data for all specified runs and indicators.
@@ -752,7 +752,7 @@ class WeatherForecast(ABC):
             coverages,
         )
 
-    def _get_forecast_horizons(self, coverage_ids: list[str]) -> list[list[int]]:
+    def _get_forecast_horizons(self, coverage_ids: list[str]) -> list[list[dt.timedelta]]:
         """(Protected)
         Retrieve the times for each coverage_id.
 
@@ -762,7 +762,7 @@ class WeatherForecast(ABC):
         Returns:
             List of times for each coverage ID.
         """
-        indicator_times: list[list[int]] = []
+        indicator_times: list[list[dt.timedelta]] = []
         for coverage_id in coverage_ids:
             times = self.get_coverage_description(coverage_id)["forecast_horizons"]
             indicator_times.append(times)
@@ -771,7 +771,7 @@ class WeatherForecast(ABC):
     def find_common_forecast_horizons(
         self,
         list_coverage_id: list[str],
-    ) -> list[int]:
+    ) -> list[dt.timedelta]:
         """Find common forecast_horizons among coverage IDs.
 
         Args:
@@ -795,7 +795,7 @@ class WeatherForecast(ABC):
 
         return sorted(common_forecast_horizons)
 
-    def _validate_forecast_horizons(self, coverage_ids: list[str], forecast_horizons: list[int]) -> list[str]:
+    def _validate_forecast_horizons(self, coverage_ids: list[str], forecast_horizons: list[dt.timedelta]) -> list[str]:
         """(Protected)
         Validate forecast_horizons for a list of coverage IDs.
 
