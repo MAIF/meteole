@@ -176,7 +176,6 @@ class WeatherForecast(ABC):
         # Ensure we only have one of coverage_id, indicator
         if not bool(indicator) ^ bool(coverage_id):
             raise ValueError("Argument `indicator` or `coverage_id` need to be set (only one of them)")
-
         if indicator is not None:
             coverage_id = self._get_coverage_id(indicator, run, interval)
 
