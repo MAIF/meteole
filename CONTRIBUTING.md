@@ -73,5 +73,9 @@ pytest tests/
 ```
 
 ## Continuous integration
+To run the pre-commits, you have to:
+    pip install meteole[dev]
+    pre-commit install
+    pre-commit run --all-files
 
 TODO

@@ -38,7 +38,6 @@ class TestAromeForecast(unittest.TestCase):
         self.assertEqual(forecast._client._application_id, self.application_id)
         self.assertEqual(forecast._client._verify, self.certs_path)
         self.assertEqual(forecast.MODEL_NAME, "arome")
-        self.assertEqual(len(forecast.INDICATORS), 19)
         # mock_get_capabilities.assert_called_once()
 
     def test_invalid_precision(self):
@@ -722,7 +721,6 @@ class TestArpegeForecast(unittest.TestCase):
         self.assertEqual(arpege_forecast._client._token, token)
         self.assertEqual(arpege_forecast._client._application_id, application_id)
         self.assertEqual(arpege_forecast.MODEL_NAME, "arpege")
-        self.assertEqual(len(arpege_forecast.INDICATORS), 47)
         # mock_get_capabilities.assert_called_once()
 
     @patch("meteole._arpege.ArpegeForecast.get_capabilities")

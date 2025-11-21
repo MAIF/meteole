@@ -12,13 +12,6 @@ AVAILABLE_PIAF_TERRITORY: list[str] = [
     "FRANCE",
 ]
 
-PIAF_INSTANT_INDICATORS: list[str] = []
-
-
-PIAF_OTHER_INDICATORS: list[str] = [
-    "TOTAL_PRECIPITATION_RATE__GROUND_OR_WATER_SURFACE",
-]
-
 
 @final
 class PiafForecast(WeatherForecast):
@@ -35,8 +28,6 @@ class PiafForecast(WeatherForecast):
 
     # Model constants
     MODEL_NAME: str = "piaf"
-    INDICATORS: list[str] = PIAF_INSTANT_INDICATORS + PIAF_OTHER_INDICATORS
-    INSTANT_INDICATORS: list[str] = PIAF_INSTANT_INDICATORS
     BASE_ENTRY_POINT: str = "wcs/MF-NWP-HIGHRES-PIAF"
     MODEL_TYPE: str = "DETER"
     ENSEMBLE_NUMBERS: int = 1

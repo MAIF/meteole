@@ -72,7 +72,7 @@ logger = logging.getLogger("meteole")
 arome_client = AromeForecast(application_id=APPLICATION_ID)  # APPLICATION_ID found on portail.meteo-france.Fr
 
 # Check indicators available
-print(arome_client.INDICATORS)
+print(arome_client.indicators)
 
 # Fetch weather data
 df_arome = arome_client.get_coverage(
