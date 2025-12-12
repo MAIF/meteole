@@ -55,6 +55,7 @@ class WeatherForecast(ABC):
     ENSEMBLE_NUMBERS: int = 1
     DEFAULT_TERRITORY: str = "FRANCE"
     DEFAULT_PRECISION: float = 0.01
+    MAX_DECIMAL_PLACES: int = 4  # used to avoid floating point issues when finding the closest grid point
     CLIENT_CLASS: type[BaseClient]
 
     def __init__(
@@ -205,6 +206,20 @@ class WeatherForecast(ABC):
                 "heights": self._get_available_feature(grid_axis, "height"),
                 "pressures": self._get_available_feature(grid_axis, "pressure"),
             }
+
+            # Find min and max latitude and longitude
+            envelope = description["wcs:CoverageDescriptions"]["wcs:CoverageDescription"]["gml:boundedBy"][
+                "gml:EnvelopeWithTimePeriod"
+            ]
+            lower = envelope["gml:lowerCorner"]  # '-12 37.5'
+            upper = envelope["gml:upperCorner"]  # '16 55.4'
+            lower_long, lower_lat = [float(val) for val in lower.split()]
+            upper_long, upper_lat = [float(val) for val in upper.split()]
+            coverage_description_single["min_latitude"] = lower_lat
+            coverage_description_single["max_latitude"] = upper_lat
+            coverage_description_single["min_longitude"] = lower_long
+            coverage_description_single["max_longitude"] = upper_long
+
             if ensemble_number is None or len(numbers_to_fetch) == 1:
                 coverage_description = coverage_description_single
             else:
@@ -215,8 +230,8 @@ class WeatherForecast(ABC):
     def get_coverage(
         self,
         indicator: str | None = None,
-        lat: tuple = FRANCE_METRO_LATITUDES,
-        long: tuple = FRANCE_METRO_LONGITUDES,
+        lat: tuple | float = FRANCE_METRO_LATITUDES,
+        long: tuple | float = FRANCE_METRO_LONGITUDES,
         ensemble_numbers: list[int] | None = None,
         heights: list[int] | None = None,
         pressures: list[int] | None = None,
@@ -230,8 +245,8 @@ class WeatherForecast(ABC):
 
         Args:
             indicator: Indicator of a coverage to retrieve.
-            lat: Minimum and maximum latitude.
-            long: Minimum and maximum longitude.
+            lat (long): Minimum and maximum latitude (longitude), or latitude (longitude) of the desired location.
+                        The closest grid point to the requested coordinate will be used.
             ensemble_numbers: For ensemble models only, numbers of the desired
                    ensemble members. If None, defaults to the member 0.
             heights: Heights in meters.
@@ -264,6 +279,12 @@ class WeatherForecast(ABC):
 
         axis = self.get_coverage_description(coverage_id)
 
+        # Handle lat,long inputs (needs axis to check bounds)
+        user_lat, user_long = lat, long
+        lat, long = self._check_coords(lat, long, axis)
+        logger.info(f"Using `lat={lat} (user input: {user_lat})`")
+        logger.info(f"Using `long={long} (user input: {user_long})`")
+
         heights = self._raise_if_invalid_or_fetch_default("heights", heights, axis["heights"])
         pressures = self._raise_if_invalid_or_fetch_default("pressures", pressures, axis["pressures"])
         forecast_horizons = self._raise_if_invalid_or_fetch_default(
@@ -288,6 +309,37 @@ class WeatherForecast(ABC):
         ]
 
         return pd.concat(df_list, axis=0).reset_index(drop=True)
+
+    def _check_coords(
+        self, lat: float | tuple[float, float], long: float | tuple[float, float], axis: dict[str, Any]
+    ) -> tuple[tuple[float, float], tuple[float, float]]:
+        if isinstance(lat, (int, float)):
+            min_lat, max_lat = lat, lat
+        else:
+            min_lat, max_lat = lat
+        if isinstance(long, (int, float)):
+            min_long, max_long = long, long
+        else:
+            min_long, max_long = long
+        min_long, max_long = self._compute_closest_grid_point(min_long), self._compute_closest_grid_point(max_long)
+        min_lat, max_lat = self._compute_closest_grid_point(min_lat), self._compute_closest_grid_point(max_lat)
+        if min_lat < axis["min_latitude"]:
+            raise ValueError(f"Lower latitude is out of bounds (must be >= {axis['min_latitude']}).")
+        if max_lat > axis["max_latitude"]:
+            raise ValueError(f"Upper latitude is out of bounds (must be <= {axis['max_latitude']}).")
+        if min_long < axis["min_longitude"]:
+            raise ValueError(f"Lower longitude is out of bounds (must be >= {axis['min_longitude']}).")
+        if max_long > axis["max_longitude"]:
+            raise ValueError(f"Upper longitude is out of bounds (must be <= {axis['max_longitude']}).")
+        return (min_lat, max_lat), (min_long, max_long)
+
+    def _compute_closest_grid_point(self, coord: float) -> float:
+        """Returns the coordinate of the closest grid point"""
+
+        # The grid points are regularly spaced at intervals of 'precision'
+        coord_grid = round(coord / self.precision) * self.precision
+        coord_grid = round(coord_grid, self.MAX_DECIMAL_PLACES)  # avoid floating point issues
+        return coord_grid
 
     def _build_capabilities(self) -> pd.DataFrame:
         """(Protected)

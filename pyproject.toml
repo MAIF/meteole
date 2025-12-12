@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "meteole"
-version = "0.2.3"
+version = "0.2.4"
 requires-python = ">3.8.0"
 description = "A Python client library for forecast model APIs (e.g., Météo-France)."
 readme = "README.md"
