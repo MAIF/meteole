@@ -21,6 +21,9 @@ class HttpStatus(int, Enum):
     """Http status codes"""
 
     OK = 200
+    FILE_SENT = 201
+    REQUEST_ACCEPTED = 202
+    ORDER_NOT_READY = 204
     BAD_REQUEST = 400
     UNAUTHORIZED = 401
     FORBIDDEN = 403
@@ -118,7 +121,11 @@ class MeteoFranceClient(BaseClient):
             try:
                 resp: Response = self._session.get(url, params=params, verify=self._verify)
 
-                if resp.status_code == HttpStatus.OK:
+                if (
+                    resp.status_code == HttpStatus.OK
+                    or resp.status_code == HttpStatus.REQUEST_ACCEPTED
+                    or resp.status_code == HttpStatus.FILE_SENT
+                ):
                     logger.debug("Successful request")
                     return resp
 
