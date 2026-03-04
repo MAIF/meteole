@@ -246,7 +246,8 @@ class WeatherForecast(ABC):
         self,
         indicator: str | None = None,
         lat: tuple | float = FRANCE_METRO_LATITUDES,
-        long: tuple | float = FRANCE_METRO_LONGITUDES,
+        lon: tuple | float = FRANCE_METRO_LONGITUDES,
+        long: tuple | float | None = None,
         ensemble_numbers: list[int] | None = None,
         heights: list[int] | None = None,
         pressures: list[int] | None = None,
@@ -260,7 +261,7 @@ class WeatherForecast(ABC):
 
         Args:
             indicator: Indicator of a coverage to retrieve.
-            lat (long): Minimum and maximum latitude (longitude), or latitude (longitude) of the desired location.
+            lat (lon): Minimum and maximum latitude (longitude), or latitude (longitude) of the desired location.
                         The closest grid point to the requested coordinate will be used.
             ensemble_numbers: For ensemble models only, numbers of the desired
                    ensemble members. If None, defaults to the member 0.
@@ -278,6 +279,21 @@ class WeatherForecast(ABC):
         Returns:
             pd.DataFrame: The complete run for the specified execution.
         """
+        if long is not None:
+            if lon != self.FRANCE_METRO_LONGITUDES:
+                raise ValueError(
+                    "Arguments `long` and `lon` cannot both be specified. "
+                    "Use only `lon` (longitude) in future code."
+                )
+            warn(
+                (
+                    "Argument `long` is deprecated and will be removed in a "
+                    "future version. Use `lon` instead."
+                ),
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            lon = long
         # Numbers cannot be None if the model type is ENSEMBLE
         if self.MODEL_TYPE == "ENSEMBLE":
             if ensemble_numbers is None:
@@ -294,11 +310,11 @@ class WeatherForecast(ABC):
 
         axis = self.get_coverage_description(coverage_id)
 
-        # Handle lat,long inputs (needs axis to check bounds)
-        user_lat, user_long = lat, long
-        lat, long = self._check_and_format_coords(lat, long, axis)
+        # Handle lat,lon inputs (needs axis to check bounds)
+        user_lat, user_long = lat, lon
+        lat, lon = self._check_and_format_coords(lat, lon, axis)
         logger.info(f"Using `lat={lat} (user input: {user_lat})`")
-        logger.info(f"Using `long={long} (user input: {user_long})`")
+        logger.info(f"Using `lon={lon} (user input: {user_long})`")
 
         heights = self._raise_if_invalid_or_fetch_default("heights", heights, axis["heights"])
         pressures = self._raise_if_invalid_or_fetch_default("pressures", pressures, axis["pressures"])
@@ -314,7 +330,7 @@ class WeatherForecast(ABC):
                 pressure=pressure if pressure != -1 else None,
                 forecast_horizon=forecast_horizon,
                 lat=lat,
-                long=long,
+                lon=lon,
                 temp_dir=temp_dir,
             )
             for forecast_horizon in forecast_horizons
@@ -326,15 +342,15 @@ class WeatherForecast(ABC):
         return pd.concat(df_list, axis=0).reset_index(drop=True)
 
     def _check_and_format_coords(
-        self, lat: float | tuple[float, float], long: float | tuple[float, float], axis: dict[str, Any]
+        self, lat: float | tuple[float, float], lon: float | tuple[float, float], axis: dict[str, Any]
     ) -> tuple[tuple[float, float], tuple[float, float]]:
-        """Formats lat, long arguments passed to get_coverage:
+        """Formats lat, lon arguments passed to get_coverage:
             - Rounds all coordinates to the closest grid point
             - If a single float is passed, converts it to a tuple (value,value)
 
         Args:
-            lat, long : tuple (min,max) or float.
-            lat (long): Minimum and maximum latitude (longitude), or latitude (longitude) of the desired location.
+            lat, lon : tuple (min,max) or float.
+            lat (lon): Minimum and maximum latitude (longitude), or latitude (longitude) of the desired location.
                     The closest grid point to the requested coordinate will be used.
 
         Returns:
@@ -344,10 +360,10 @@ class WeatherForecast(ABC):
             min_lat, max_lat = lat, lat
         else:
             min_lat, max_lat = lat
-        if isinstance(long, (int, float)):
-            min_long, max_long = long, long
+        if isinstance(lon, (int, float)):
+            min_long, max_long = lon, lon
         else:
-            min_long, max_long = long
+            min_long, max_long = lon
         min_long, max_long = self._compute_closest_grid_point(min_long), self._compute_closest_grid_point(max_long)
         min_lat, max_lat = self._compute_closest_grid_point(min_lat), self._compute_closest_grid_point(max_lat)
         if min_lat < axis["min_latitude"]:
@@ -645,7 +661,7 @@ class WeatherForecast(ABC):
         pressure: int | None,
         height: int | None,
         lat: tuple,
-        long: tuple,
+        lon: tuple,
         temp_dir: str | None = None,
     ) -> pd.DataFrame:
         """(Protected)
@@ -658,7 +674,7 @@ class WeatherForecast(ABC):
             forecast_horizon (dt.timedelta): the forecast horizon (how much time ahead?)
             ensemble_number (int): For ensemble models only, number of the desired ensemble member.
             lat (tuple): minimum and maximum latitude
-            long (tuple): minimum and maximum longitude
+            lon (tuple): minimum and maximum longitude
             temp_dir (str | None): Directory to store the temporary file. Defaults to None.
 
         Returns:
@@ -672,21 +688,21 @@ class WeatherForecast(ABC):
             pressure=pressure,
             forecast_horizon_in_seconds=int(forecast_horizon.total_seconds()),
             lat=lat,
-            long=long,
+            lon=lon,
         )
 
         df: pd.DataFrame = self._grib_bytes_to_df(grib_binary, temp_dir=temp_dir)
 
         if self.MODEL_NAME == "pearpege":
-            # for unclear reasons, the pearpege API does not accept lat, long
+            # for unclear reasons, the pearpege API does not accept lat, lon
             # parameters unlike the other models API.
             # So we retrieve all the domain and then filter the results
-            # for the desired lat, long in _get_data_single_forecast
+            # for the desired lat, lon in _get_data_single_forecast
             df = df.loc[
                 (df["latitude"] <= lat[1])
                 & (df["latitude"] >= lat[0])
-                & (df["longitude"] <= long[1])
-                & (df["longitude"] >= long[0])
+                & (df["longitude"] <= lon[1])
+                & (df["longitude"] >= lon[0])
             ]
         # Drop and rename columns
         df.drop(columns=["surface", "valid_time"], errors="ignore", inplace=True)
@@ -745,7 +761,7 @@ class WeatherForecast(ABC):
         pressure: int | None = None,
         forecast_horizon_in_seconds: int = 0,
         lat: tuple = (37.5, 55.4),
-        long: tuple = (-12, 16),
+        lon: tuple = (-12, 16),
     ) -> bytes:
         """(Protected)
         Retrieves data for a specified model prediction.
@@ -760,7 +776,7 @@ class WeatherForecast(ABC):
                 Defaults to 0 (current time).
             lat (tuple[float, float], optional): Tuple specifying the minimum and maximum latitudes.
                 Defaults to (37.5, 55.4), covering the latitudes of France.
-            long (tuple[float, float], optional): Tuple specifying the minimum and maximum longitudes.
+            lon (tuple[float, float], optional): Tuple specifying the minimum and maximum longitudes.
                 Defaults to (-12, 16), covering the longitudes of France.
 
         Returns:
@@ -779,10 +795,10 @@ class WeatherForecast(ABC):
             url = f"{self._model_base_path}/{self._entry_point.replace('xxx', f'{ensemble_number:03}')}/GetCoverage"
 
         if self.MODEL_NAME == "pearpege":
-            # for unclear reasons, the pearpege API does not accept lat, long
+            # for unclear reasons, the pearpege API does not accept lat, lon
             # parameters unlike the other models API.
             # So we retrieve all the domain and then filter the results
-            # for the desired lat, long in _get_data_single_forecast
+            # for the desired lat, lon in _get_data_single_forecast
             subset = [
                 *([f"pressure({pressure})"] if pressure is not None else []),
                 *([f"height({height})"] if height is not None else []),
@@ -794,7 +810,7 @@ class WeatherForecast(ABC):
                 *([f"height({height})"] if height is not None else []),
                 f"time({forecast_horizon_in_seconds})",
                 f"lat({lat[0]},{lat[1]})",
-                f"long({long[0]},{long[1]})",
+                f"lon({lon[0]},{lon[1]})",
             ]
 
         params = {
@@ -843,7 +859,7 @@ class WeatherForecast(ABC):
         pressures: list[int] | None = None,
         intervals: list[str | None] | None = None,
         lat: tuple = FRANCE_METRO_LATITUDES,
-        long: tuple = FRANCE_METRO_LONGITUDES,
+        lon: tuple = FRANCE_METRO_LONGITUDES,
         forecast_horizons: list[dt.timedelta] | None = None,
         temp_dir: str | None = None,
     ) -> pd.DataFrame:
@@ -865,7 +881,7 @@ class WeatherForecast(ABC):
                     Must be `None` or "" for instant indicators ; otherwise, raises an exception.
                     Defaults to 'P1D' for time-aggregated indicators.
             lat (tuple): The latitude range as (min_latitude, max_latitude). Defaults to FRANCE_METRO_LATITUDES.
-            long (tuple): The longitude range as (min_longitude, max_longitude). Defaults to FRANCE_METRO_LONGITUDES.
+            lon (tuple): The longitude range as (min_longitude, max_longitude). Defaults to FRANCE_METRO_LONGITUDES.
             forecast_horizons (list[dt.timedelta] | None): A list of forecast horizon values in dt.timedelta. Defaults to None.
             temp_dir (str | None): Directory to store the temporary file. Defaults to None.
 
@@ -886,7 +902,7 @@ class WeatherForecast(ABC):
                 indicator_names=indicator_names,
                 run=run,
                 lat=lat,
-                long=long,
+                lon=lon,
                 ensemble_numbers=ensemble_numbers,
                 heights=heights,
                 pressures=pressures,
@@ -907,7 +923,7 @@ class WeatherForecast(ABC):
         pressures: list[int] | None = None,
         intervals: list[str | None] | None = None,
         lat: tuple = FRANCE_METRO_LATITUDES,
-        long: tuple = FRANCE_METRO_LONGITUDES,
+        lon: tuple = FRANCE_METRO_LONGITUDES,
         forecast_horizons: list[dt.timedelta] | None = None,
         temp_dir: str | None = None,
     ) -> pd.DataFrame:
@@ -929,7 +945,7 @@ class WeatherForecast(ABC):
                     Must be `None` or "" for instant indicators ; otherwise, raises an exception.
                     Defaults to 'P1D' for time-aggregated indicators.
             lat (tuple): The latitude range as (min_latitude, max_latitude). Defaults to FRANCE_METRO_LATITUDES.
-            long (tuple): The longitude range as (min_longitude, max_longitude). Defaults to FRANCE_METRO_LONGITUDES.
+            lon (tuple): The longitude range as (min_longitude, max_longitude). Defaults to FRANCE_METRO_LONGITUDES.
             forecast_horizons (list[dt.timedelta] | None): A list of forecast horizon values (as a dt.timedelta object). Defaults to None.
             temp_dir (str | None): Directory to store the temporary file. Defaults to None.
 
@@ -989,7 +1005,7 @@ class WeatherForecast(ABC):
                     coverage_id=coverage_id,
                     run=run,
                     lat=lat,
-                    long=long,
+                    lon=lon,
                     ensemble_numbers=[ensemble_number] if ensemble_number is not None else None,
                     heights=[height] if height is not None else [],
                     pressures=[pressure] if pressure is not None else [],

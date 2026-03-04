@@ -173,7 +173,7 @@ class TestAromeForecast(unittest.TestCase):
             ensemble_number=None,
             forecast_horizon=dt.timedelta(hours=0),
             lat=(37.5, 55.4),
-            long=(-12, 16),
+            lon=(-12, 16),
         )
 
         self.assertTrue("data" in df.columns)
@@ -200,7 +200,7 @@ class TestAromeForecast(unittest.TestCase):
             ensemble_number=None,
             forecast_horizon=dt.timedelta(hours=0),
             lat=(37.5, 55.4),
-            long=(-12, 16),
+            lon=(-12, 16),
         )
 
         self.assertTrue("data_2m" in df.columns)
@@ -261,7 +261,7 @@ class TestAromeForecast(unittest.TestCase):
             heights=[2],
             forecast_horizons=[dt.timedelta(hours=0)],
             lat=(37.5, 55.4),
-            long=(-12, 16),
+            lon=(-12, 16),
         )
 
         mock_get_data_single_forecast.assert_called_once_with(
@@ -271,7 +271,7 @@ class TestAromeForecast(unittest.TestCase):
             ensemble_number=None,
             forecast_horizon=dt.timedelta(hours=0),
             lat=(37.5, 55.4),
-            long=(-12, 16),
+            lon=(-12, 16),
             temp_dir=None,
         )
 
@@ -281,7 +281,7 @@ class TestAromeForecast(unittest.TestCase):
     def test_get_coverage_lat_lon(
         self, mock_get_data_single_forecast, mock_get_capabilities, mock_get_coverage_description
     ):
-        """Tests the different ways that a user can provide lat and long to get_coverage (float and tuple)"""
+        """Tests the different ways that a user can provide lat and lon to get_coverage (float and tuple)"""
         mock_get_data_single_forecast.return_value = pd.DataFrame(
             {
                 "latitude": [1, 2, 3],
@@ -309,8 +309,8 @@ class TestAromeForecast(unittest.TestCase):
         )
 
         for lat, expected_lat in zip((37.5689, (37.5689, 45.00986)), ((37.57, 37.57), (37.57, 45.01))):
-            for long, expected_long in zip((2.568, (-1.566, 2.568)), ((2.57, 2.57), (-1.57, 2.57))):
-                forecast.get_coverage(coverage_id="toto", lat=lat, long=long)
+            for lon, expected_long in zip((2.568, (-1.566, 2.568)), ((2.57, 2.57), (-1.57, 2.57))):
+                forecast.get_coverage(coverage_id="toto", lat=lat, lon=lon)
                 mock_get_data_single_forecast.assert_called_once_with(
                     coverage_id="toto",
                     ensemble_number=None,
@@ -318,7 +318,7 @@ class TestAromeForecast(unittest.TestCase):
                     pressure=None,
                     forecast_horizon=dt.timedelta(hours=0),
                     lat=expected_lat,
-                    long=expected_long,
+                    lon=expected_long,
                     temp_dir=None,
                 )
                 mock_get_data_single_forecast.reset_mock()
@@ -456,7 +456,7 @@ class TestAromeForecast(unittest.TestCase):
         pressures = [None, None]
         intervals = ["", "P1D"]
         lat = (37.5, 55.4)
-        long = (-12, 16)
+        lon = (-12, 16)
         forecast_horizons = [dt.timedelta(hours=0)]
 
         expected_result = pd.DataFrame(
@@ -483,7 +483,7 @@ class TestAromeForecast(unittest.TestCase):
             pressures=pressures,
             intervals=intervals,
             lat=lat,
-            long=long,
+            lon=lon,
             forecast_horizons=forecast_horizons,
         )
         pd.testing.assert_frame_equal(result, expected_result)
@@ -514,7 +514,7 @@ class TestAromeForecast(unittest.TestCase):
         pressures = [None, None]
         intervals = ["", "P1D"]
         lat = (37.5, 55.4)
-        long = (-12, 16)
+        lon = (-12, 16)
         forecast_horizons = [dt.timedelta(hours=0)]
 
         forecast = AromeForecast(
@@ -531,7 +531,7 @@ class TestAromeForecast(unittest.TestCase):
                 pressures=pressures,
                 intervals=intervals,
                 lat=lat,
-                long=long,
+                lon=lon,
                 forecast_horizons=forecast_horizons,
             )
         self.assertIn("are not valid for these coverage_ids", str(context.exception))
@@ -599,7 +599,7 @@ class TestAromeForecast(unittest.TestCase):
         pressures = [None, None]
         intervals = ["", "P1D"]
         lat = (37.5, 55.4)
-        long = (-12, 16)
+        lon = (-12, 16)
         forecast_horizons = [dt.timedelta(hours=0)]
 
         expected_result = pd.DataFrame(
@@ -631,7 +631,7 @@ class TestAromeForecast(unittest.TestCase):
             pressures=pressures,
             intervals=intervals,
             lat=lat,
-            long=long,
+            lon=lon,
             forecast_horizons=forecast_horizons,
         )
         pd.testing.assert_frame_equal(result, expected_result)
@@ -680,7 +680,7 @@ class TestAromeForecast(unittest.TestCase):
         pressures = None
         intervals = ["", "P1D"]
         lat = (37.5, 55.4)
-        long = (-12, 16)
+        lon = (-12, 16)
         forecast_horizons = [dt.timedelta(hours=0)]
 
         expected_result = pd.DataFrame(
@@ -701,7 +701,7 @@ class TestAromeForecast(unittest.TestCase):
         )
 
         result = forecast.get_combined_coverage(
-            indicator_names, runs, heights, pressures, intervals, lat, long, forecast_horizons
+            indicator_names, runs, heights, pressures, intervals, lat, lon, forecast_horizons
         )
         pd.testing.assert_frame_equal(result, expected_result)
 

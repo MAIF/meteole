@@ -18,9 +18,9 @@ See PR #62
 
 ## [0.2.4] - December, 2025
 ### Features
-* Added a way to call the get_coverage method of WeatherForecast with floats for lat, long (instead of tuples only)
+* Added a way to call the get_coverage method of WeatherForecast with floats for lat, lon (instead of tuples only)
   to get forecast at a specific location (nearest grid point).
-* Added a check on the lat, long parameters of get_coverage so that the closest gridpoint is used
+* Added a check on the lat, lon parameters of get_coverage so that the closest gridpoint is used
 * Added min and max available coordinates to get_coverage_description output
 * Updated tests and documentation to reflect these changes
 
