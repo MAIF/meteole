@@ -282,14 +282,10 @@ class WeatherForecast(ABC):
         if long is not None:
             if lon != self.FRANCE_METRO_LONGITUDES:
                 raise ValueError(
-                    "Arguments `long` and `lon` cannot both be specified. "
-                    "Use only `lon` (longitude) in future code."
+                    "Arguments `long` and `lon` cannot both be specified. Use only `lon` (longitude) in future code."
                 )
             warn(
-                (
-                    "Argument `long` is deprecated and will be removed in a "
-                    "future version. Use `lon` instead."
-                ),
+                ("Argument `long` is deprecated and will be removed in a future version. Use `lon` instead."),
                 DeprecationWarning,
                 stacklevel=2,
             )
