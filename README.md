@@ -87,7 +87,7 @@ df_arome = arome_client.get_coverage(
     ],  
     heights=[10],                                                              # Optional: height above ground level
     pressures=None,                                                            # Optional: pressure level
-    long = (-5.1413, 9.5602),                                                  # Optional: longitude. tuple (min_long, max_long) or a float for a specific location
+    lon = (-5.1413, 9.5602),                                                  # Optional: longitude. tuple (min_long, max_long) or a float for a specific location
     lat = (41.33356, 51.0889),                                                 # Optional: latitude. tuple (min_lat, max_lat) or a float for a specific location
     coverage_id=None,                                                          # Optional: an alternative to indicator/run/interval
     temp_dir=None,                                                             # Optional: Directory to store the temporary file
@@ -116,7 +116,7 @@ print(description)
 ```
 
 #### Geographical Coverage
-The geographical coverage of forecasts can be customized using the lat and long parameters in the get_coverage method. By default, Meteole retrieves data for the entire metropolitan France.
+The geographical coverage of forecasts can be customized using the lat and lon parameters in the get_coverage method. By default, Meteole retrieves data for the entire metropolitan France.
 
 #### Fetch Forecasts for Multiple Indicators
 The `get_combined_coverage` method allows you to retrieve weather data for multiple indicators at the same time, streamlining the process of gathering forecasts for different parameters (e.g., temperature, wind speed, etc.). For detailed guidance on using this feature, refer to this [tutorial](./tutorial/Fetch_forecast_for_multiple_indicators.ipynb).

@@ -71,4 +71,4 @@ coverage_axis['pressures']
 ```
 
 ### Geographical Coverage
-The geographical coverage of forecasts can be customized using the `lat` and `long` parameters. By default, Meteole retrieves data for the entire metropolitan France.
+The geographical coverage of forecasts can be customized using the `lat` and `lon` parameters. By default, Meteole retrieves data for the entire metropolitan France.

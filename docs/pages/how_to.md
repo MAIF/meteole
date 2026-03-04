@@ -85,7 +85,7 @@ df_arome = arome_client.get_coverage(
     ],                                               # Optional: prediction times (in hours)
     heights=[10],                                                              # Optional: height above ground level
     pressures=None,                                                            # Optional: pressure level
-    long = (-5.1413, 9.5602),                                                  # Optional: longitude. tuple (min_long, max_long) or a float for a specific location
+    lon = (-5.1413, 9.5602),                                                  # Optional: longitude. tuple (min_long, max_long) or a float for a specific location
     lat = (41.33356, 51.0889),                                                 # Optional: latitude. tuple (min_lat, max_lat) or a float for a specific location
     coverage_id=None,                                                          # Optional: an alternative to indicator/run/interval
     temp_dir=None,                                                             # Optional: Directory to store the temporary file

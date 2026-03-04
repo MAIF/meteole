@@ -185,7 +185,7 @@ def _distance_from_coords(lat1: float, lon1: float, lat2: float, lon2: float) ->
 
 
 def sort_stations_by_distance(lat: float, lon: float, stations: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Sorts a list of stations by distance to a given point (lat, long)
+    """Sorts a list of stations by distance to a given point (lat, lon)
     Returns a copy of the list, sorted
     """
 
