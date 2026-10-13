@@ -113,7 +113,10 @@ class Vigilance:
         df_phenomenon_j1["echeance"] = "J1"
 
         df_phenomenon = pd.concat([df_phenomenon_j, df_phenomenon_j1]).reset_index(drop=True)
-        df_phenomenon["phenomenon_libelle"] = df_phenomenon["phenomenon_id"].map(self.PHENOMENO_IDS)
+        if "phenomenon_id" in df_phenomenon.columns:
+            df_phenomenon["phenomenon_libelle"] = df_phenomenon["phenomenon_id"].map(self.PHENOMENO_IDS)
+        else:
+            df_phenomenon["phenomenon_libelle"] = pd.Series(dtype="object")
 
         df_timelaps_j = pd.json_normalize(df_j["timelaps.domain_ids"].explode())
         df_timelaps_j1 = pd.json_normalize(df_j1["timelaps.domain_ids"].explode())
