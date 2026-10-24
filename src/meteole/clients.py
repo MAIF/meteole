@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import time
 from abc import ABC, abstractmethod
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -150,20 +151,34 @@ class MeteoFranceClient(BaseClient):
                     logger.error("Missing data")
                     raise MissingDataError(resp.text)
 
+                elif resp.status_code == HttpStatus.TOO_MANY_REQUESTS:
+                    logger.warning("Too many requests")
+
                 elif (
                     resp.status_code == HttpStatus.BAD_GATEWAY
                     or resp.status_code == HttpStatus.UNAVAILABLE
                     or resp.status_code == HttpStatus.GATEWAY_TIMEOUT
                 ):
-                    logger.error("Service not available")
+                    logger.error(f"Service not available: error {resp.status_code}")
 
             except requests.exceptions.ConnectionError as e:
                 logger.warning(f"Connection error : {e}.")
+                resp = requests.Response()
+                resp.status_code = 0
 
             # Wait before retrying
             attempt += 1
-            waiting_time = attempt * self.RETRY_DELAY_SEC
-            logger.info(f"Retrying (attempt {attempt}/{max_retries}) - waiting {waiting_time}s before retrying...")
+            if resp.status_code == HttpStatus.TOO_MANY_REQUESTS:
+                try:
+                    next_access_time = resp.json().get("nextAccessTime")
+                    next_access_time_dt = datetime.strptime(next_access_time, "%Y-%b.-%d %H:%M:%S%z UTC")
+                    current_time = datetime.now(timezone.utc)
+                    waiting_time = max(self.RETRY_DELAY_SEC, (next_access_time_dt - current_time).total_seconds() + 1)
+                except Exception:
+                    waiting_time = attempt * self.RETRY_DELAY_SEC
+            else:
+                waiting_time = attempt * self.RETRY_DELAY_SEC
+            logger.info(f"Retrying (attempt {attempt}/{max_retries}) - waiting {waiting_time:.0f}s before retrying...")
             time.sleep(waiting_time)
             continue
 
