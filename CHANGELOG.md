@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.8] - October, 2026
+### Features
+* Make logs more explicit when hitting too many request and wait exactly the required time before retrying the API. See #77
+
 ## [0.2.7] - October, 2026
 ### Features
 * Added support for AROME-IFS model. See #73
