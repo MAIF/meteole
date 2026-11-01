@@ -19,7 +19,7 @@
         runs-on: ubuntu-latest
         steps:
           - name: Checkout
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
           - name: Set up Python version
             uses: actions/setup-python@v6
             with:
@@ -51,7 +51,7 @@
           id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
         steps:
           - name: Checkout
-            uses: actions/checkout@v6
+            uses: actions/checkout@v7
           - name: Set up Python version
             uses: actions/setup-python@v6
             with:
