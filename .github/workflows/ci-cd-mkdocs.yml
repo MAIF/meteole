@@ -21,7 +21,7 @@
       steps:
         - uses: actions/checkout@v6
         - name: Install Python
-          uses: actions/setup-python@v6
+          uses: actions/setup-python@v7
           with:
             python-version: '3.11'
         - name: Install package with optional dependency 'doc'
